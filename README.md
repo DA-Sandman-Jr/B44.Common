@@ -8,13 +8,22 @@ package on GitHub Packages, plus the canonical B44-wide standards under
 
 | Namespace | Types | Origin |
 |---|---|---|
-| `B44.Common` | `Vec2`, `Rgba`, `NumberFormatter`, `SafeConvert` | GameB / GameC / GameA |
+| `B44.Common` | `Rgba`, `NumberFormatter`, `SafeConvert`, `TimeProviderExtensions` | GameB / GameC / GameA |
 | `B44.Common.Diagnostics` | `StructuredGameLogger`, `LogCategory` (name struct — games declare their own constants), `LogSeverity`, `LogVerbosityConfig`, `StructuredLogEvent` | merge of all three games |
-| `B44.Common.Interfaces` | `IRandomSource` (+ default-interface `NextInt`/`NextDouble`), `SystemRandomSource`, `ITimeSource`, `SystemTimeSource`, `FakeTimeSource` | merge of GameB + GameC |
+| `B44.Common.Interfaces` | `IRandomSource` (+ default-interface `NextInt`/`NextDouble`), `SystemRandomSource` | merge of GameB + GameC |
 | `B44.Common.Persistence` | `IRepository<T>`, `AtomicJsonFileStore<T>`, `InMemoryRepository<T>`, `RepositoryFactory.CreateWithFallback`, `StoreException` | genericized from GameC |
 
 Deliberately NOT here: `*ActionResult` shapes, content catalogs, game rules or
 tuning, anything Godot-side. Sources and PDB are embedded in the assembly.
+
+Deliberately replaced by the BCL instead of shipping our own (v0.2):
+
+- **2D vectors** — use `System.Numerics.Vector2` (each game keeps its one
+  Godot bridge file). The old custom `Vec2` is gone.
+- **Time** — inject the BCL `TimeProvider` (`TimeProvider.System` in
+  production, `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing`
+  in tests). `TimeProviderExtensions.GetUtcNowUnixSeconds()` keeps unix-second
+  call sites clean. The old `ITimeSource` family is gone.
 
 ## Consuming (game repos)
 

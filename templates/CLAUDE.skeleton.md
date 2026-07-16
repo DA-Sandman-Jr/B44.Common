@@ -16,10 +16,10 @@
 ## Studio Conventions
 
 - **`*ActionResult` convention:** domain operations return a per-game result record (occurred/denial-reason/payload shape); the Godot layer renders it. The shapes are per-game — never shared.
-- **Injected time and randomness:** all wall-clock reads go through `B44.Common.Interfaces.ITimeSource`; all RNG through `IRandomSource`. Never call `DateTime.Now`, `System.Random`, or `GD.Randi` directly in Core. A nullable `IRandomSource?` parameter means "null = deterministic".
+- **Injected time and randomness:** all wall-clock reads go through an injected BCL `TimeProvider` (`TimeProvider.System` in production, `FakeTimeProvider` in tests; `B44.Common.TimeProviderExtensions.GetUtcNowUnixSeconds()` for unix-second call sites); all RNG through `B44.Common.Interfaces.IRandomSource`. Never call `DateTime.Now`, `System.Random`, or `GD.Randi` directly in Core. A nullable `IRandomSource?` parameter means "null = deterministic".
 - **Structured logging:** log through `B44.Common.Diagnostics.StructuredGameLogger` with the game's own `LogCategory` constants; the Godot sink lives in one `GodotLoggerFactory`.
 - **`*Paths.cs` node paths:** scene node paths are declared once in a paths class, never inline strings in controllers.
-- **Engine-free value types with one bridge:** Core uses `Vec2`/`Rgba` (from B44.Common) or game types like `GridPosition`; exactly one extension-method bridge file per type converts to Godot types at the boundary.
+- **Engine-free value types with one bridge:** Core uses `System.Numerics.Vector2`, `Rgba` (from B44.Common), or game types like `GridPosition`; exactly one extension-method bridge file per type converts to Godot types at the boundary.
 - **Single-sourced simulation:** AI/solver simulation must run the real rules on a copied state (`CloneForSimulation`), never a parallel reimplementation of the rules.
 
 ## Architecture Ratchet
