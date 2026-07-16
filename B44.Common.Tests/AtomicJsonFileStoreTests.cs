@@ -100,6 +100,67 @@ public class AtomicJsonFileStoreTests : IDisposable
     }
 
     [Fact]
+    public void SecondSave_RotatesPreviousSaveToBackup()
+    {
+        var store = new AtomicJsonFileStore<TestState>(SavePath);
+
+        store.Save(new TestState { Score = 1 });
+        store.Save(new TestState { Score = 2 });
+
+        Assert.True(File.Exists(SavePath + ".bak"));
+        Assert.Equal(2, store.Load()!.Score);
+        Assert.Contains("1", File.ReadAllText(SavePath + ".bak"));
+    }
+
+    [Fact]
+    public void CorruptMain_WithBackup_RecoversLastGoodSave()
+    {
+        var store = new AtomicJsonFileStore<TestState>(SavePath);
+        store.Save(new TestState { Score = 1 });
+        store.Save(new TestState { Score = 2 });
+
+        File.WriteAllText(SavePath, "{ torn write ]");
+
+        Assert.Equal(1, store.Load()!.Score);
+    }
+
+    [Fact]
+    public void MissingMain_WithBackup_LoadsBackup()
+    {
+        var store = new AtomicJsonFileStore<TestState>(SavePath);
+        store.Save(new TestState { Score = 1 });
+        store.Save(new TestState { Score = 2 });
+
+        File.Delete(SavePath);
+
+        Assert.Equal(1, store.Load()!.Score);
+    }
+
+    [Fact]
+    public void CorruptMain_WithCorruptBackup_Throws()
+    {
+        File.WriteAllText(SavePath, "{ bad ]");
+        File.WriteAllText(SavePath + ".bak", "{ also bad ]");
+        var store = new AtomicJsonFileStore<TestState>(SavePath);
+
+        Assert.Throws<StoreException>(() => store.Load());
+    }
+
+    [Fact]
+    public void Clear_RemovesBackupToo()
+    {
+        var store = new AtomicJsonFileStore<TestState>(SavePath);
+        store.Save(new TestState { Score = 1 });
+        store.Save(new TestState { Score = 2 });
+
+        store.Clear();
+
+        Assert.Null(store.Load());
+        Assert.False(File.Exists(SavePath));
+        Assert.False(File.Exists(SavePath + ".bak"));
+    }
+
+    [Fact]
     public void Load_ReturnsNullOnEmptyFile()
     {
         File.WriteAllText(SavePath, "   ");

@@ -8,7 +8,7 @@
 
 ## Hard Rules
 
-- **No save backwards-compatibility.** Format changes break old saves — that's intentional. Delete any migration/fallback code you find.
+- **No save backwards-compatibility (pre-release rule).** While the game is unreleased, format changes break old saves — that's intentional; delete any migration/fallback code you find. **This flips at 1.0:** released saves are a compatibility surface — add a versioned save envelope and migrations, and never break a shipped format without one.
 - **Never add `using Godot` to anything under `GAME.Core/`.** Zero Godot dependency is a hard invariant.
 - **Thin scene controllers.** Scene scripts translate input/output at the Godot boundary; rules, algorithms, and state machines live in `GAME.Core/` behind concrete collaborators.
 - This is a **release game**, not a prototype. Architecture and test coverage decisions should reflect that.

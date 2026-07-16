@@ -15,12 +15,31 @@ canonical home for B44-wide standards under `/templates`.
 - **Second-occurrence rule.** A primitive enters this package only when at
   least two games need it (or demonstrably will within the current effort).
   This is not a utility dumping ground.
-- **No save backwards-compatibility** in persistence helpers — unreadable
-  saves throw `StoreException` and get reset by `RepositoryFactory`, never
-  migrated.
+- **No save backwards-compatibility is a PRE-RELEASE rule.** While a game is
+  unreleased, unreadable saves throw `StoreException` and get reset by
+  `RepositoryFactory` (after `AtomicJsonFileStore`'s automatic last-good
+  `.bak` recovery), never format-migrated. At each game's 1.0 this flips:
+  released saves are a compatibility surface, and that game adds a versioned
+  envelope + migration chain on top. The store itself stays format-agnostic
+  either way.
 - **Determinism is API.** `SystemRandomSource` seeded sequences must match
   raw `System.Random` (tests pin this). Changing them breaks game test suites
   downstream.
+
+## Persistence — Decision Record
+
+`AtomicJsonFileStore` stays custom JSON-on-disk (reviewed against
+LiteDB/SQLite/Akavache, 2026-07-16). One small human-readable document per
+concern beats an embedded database here: no queries or partial updates exist;
+JSON + System.Text.Json's tolerant deserialization makes additive save
+evolution free and shape-breaking migrations a readable `JsonNode` transform;
+and a third-party container adds a SECOND compatibility surface (LiteDB has
+broken its own file format between majors) plus native-binary export friction
+(SQLite). Durability concerns are answered in-store instead: flush-to-disk
+before the rename, and `.bak` rotation with automatic recovery on load — the
+tests pin all of it. Versioned-envelope/migration helpers land in this package
+only when a second game needs them at 1.0 (GameA' `SaveFileEnvelope` is the
+first occurrence).
 
 ## Custom Logger — Decision Record & Flip Conditions
 
