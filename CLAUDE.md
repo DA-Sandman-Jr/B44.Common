@@ -22,6 +22,28 @@ canonical home for B44-wide standards under `/templates`.
   raw `System.Random` (tests pin this). Changing them breaks game test suites
   downstream.
 
+## Custom Logger — Decision Record & Flip Conditions
+
+`StructuredGameLogger` stays custom (reviewed against MEL/Serilog/ZLogger,
+2026-07-16). Rationale: logging frameworks decouple many producers from many
+sinks across library boundaries; B44 games have one producer (their own
+code), one sink (Godot — which already persists `GD.Print` output to
+`user://logs/godot.log`), and zero log-emitting dependencies. The genuine
+"wheel" here is ~60 lines, tested once in this package.
+
+Revisit and swap to a standard framework if ANY of these appears:
+
+1. A dependency that accepts/expects `Microsoft.Extensions.Logging.ILogger`
+   → adopt MEL abstractions with a custom Godot provider.
+2. A real second sink (crash reporting, telemetry, non-Godot file format)
+   → Serilog with a custom `ILogEventSink`. (Sunset Guarantee weighs against
+   remote telemetry — don't add a sink to justify the swap.)
+3. Any component running outside the Godot engine (server, CLI tool)
+   → MEL, since it loses the free Godot file sink.
+
+Migration cost is deliberately contained: all call sites go through this one
+type, so a swap is a package change + mechanical call-site updates.
+
 ## Versioning & Publish
 
 - `0.x.y` while the API churns; breaking changes bump the minor version.
