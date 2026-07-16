@@ -1,0 +1,52 @@
+name: build-test
+
+# Compiles all projects and runs the test suite. The companion format.yml
+# only checks formatting; this is the gate that catches build breaks and
+# failing tests before they land.
+#
+# TEMPLATE: replace GAME with the repo's Core/Tests project names.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # For user-account-owned private packages, another repo's Actions
+      # GITHUB_TOKEN can NOT read the package feed. Each game repo needs a
+      # classic PAT with read:packages stored as the B44_PACKAGES_PAT secret.
+      # The shell guard keeps the workflow green in repos that don't consume
+      # B44.Common yet.
+      - name: Add B44 package source
+        env:
+          B44_PACKAGES_PAT: ${{ secrets.B44_PACKAGES_PAT }}
+        run: |
+          if [ -n "$B44_PACKAGES_PAT" ]; then
+            dotnet nuget add source https://nuget.pkg.github.com/DA-Sandman-Jr/index.json \
+              --name b44 --username DA-Sandman-Jr --password "$B44_PACKAGES_PAT" \
+              --store-password-in-clear-text
+          else
+            echo "B44_PACKAGES_PAT not set; skipping B44 package source."
+          fi
+
+      # Build the Godot-free Core project on its own first: this proves the
+      # no-Godot invariant (Core must compile without the Godot SDK on the
+      # reference path) before the full solution build.
+      - name: Build Core (no-Godot invariant)
+        run: dotnet build GAME.Core/GAME.Core.csproj -c Debug
+
+      - name: Build test project
+        run: dotnet build GAME.Tests/GAME.Tests.csproj -c Debug
+
+      - name: Run tests
+        run: dotnet test GAME.Tests/GAME.Tests.csproj -c Debug --no-build

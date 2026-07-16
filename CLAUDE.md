@@ -1,0 +1,49 @@
+# B44.Common — Shared Engine-Free Primitives
+
+Private NuGet package (`B44.Common` on GitHub Packages) consumed by the three
+B44 game repos: GameA, GameB, GameC. Also the
+canonical home for B44-wide standards under `/templates`.
+
+## Hard Rules
+
+- **Engine-free forever.** No `using Godot`, no Godot/GodotSharp package or
+  assembly references anywhere in this repo. The test csproj enforces this
+  with an MSBuild guard.
+- **No game content.** Log categories, content catalogs, tuning values, save
+  DTOs, and `*ActionResult` shapes stay in the games. This package ships
+  mechanisms, not content.
+- **Second-occurrence rule.** A primitive enters this package only when at
+  least two games need it (or demonstrably will within the current effort).
+  This is not a utility dumping ground.
+- **No save backwards-compatibility** in persistence helpers — unreadable
+  saves throw `StoreException` and get reset by `RepositoryFactory`, never
+  migrated.
+- **Determinism is API.** `SystemRandomSource` seeded sequences must match
+  raw `System.Random` (tests pin this). Changing them breaks game test suites
+  downstream.
+
+## Versioning & Publish
+
+- `0.x.y` while the API churns; breaking changes bump the minor version.
+- Publish = push a `v*` tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`);
+  `publish.yml` tests, packs with that version, and pushes to
+  `https://nuget.pkg.github.com/DA-Sandman-Jr/index.json`.
+- After publishing a breaking change, bump the `PackageReference` in each game
+  deliberately — games pin exact versions.
+
+## Layout
+
+- `B44.Common/` — the package. Root namespace `B44.Common`; sub-namespaces
+  mirror the games' old folder names (`Diagnostics`, `Interfaces`,
+  `Persistence`) so migration was/is a mechanical namespace swap.
+- `B44.Common.Tests/` — xunit.v3. `<TestingPlatformDotnetTestSupport>true`
+  is required for `dotnet test` to discover xunit.v3 on current SDKs.
+- `templates/` — canonical copies of the cross-repo standards (build props/
+  targets, workflows, CLAUDE.md skeleton, nuget.config, test guard). Fix
+  drift HERE first, then re-copy to game repos.
+
+## Tests
+
+```bash
+dotnet test
+```

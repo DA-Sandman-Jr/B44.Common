@@ -1,0 +1,30 @@
+name: build-test
+
+# Compiles the package and runs the test suite. The companion format.yml only
+# checks formatting; this is the gate that catches build breaks and failing
+# tests before they land.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build package
+        run: dotnet build B44.Common/B44.Common.csproj -c Debug
+
+      - name: Build test project
+        run: dotnet build B44.Common.Tests/B44.Common.Tests.csproj -c Debug
+
+      - name: Run tests
+        run: dotnet test B44.Common.Tests/B44.Common.Tests.csproj -c Debug --no-build

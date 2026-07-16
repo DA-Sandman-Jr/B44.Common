@@ -1,0 +1,33 @@
+<Project>
+  <PropertyGroup>
+    <!-- REPO-SPECIFIC: the name of the root Godot game csproj (no extension).
+         Used by Directory.Build.targets to run the AGENTS.md sync exactly once
+         per build. This is the only line that differs between game repos. -->
+    <B44GameProjectName>REPLACE_WITH_GAME_PROJECT_NAME</B44GameProjectName>
+
+    <Nullable>enable</Nullable>
+    <!-- Surface editorconfig style/naming violations at build time so CI and
+         local `dotnet build` catch drift instead of waiting for `dotnet format`. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Required to make IDE0005 (remove unnecessary usings) fire at build
+         time. See https://github.com/dotnet/roslyn/issues/41640. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Suppress "missing XML comment". We generate doc files only to enable
+         IDE0005, not to document every public member. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <!-- Prevent SDK from auto-generating TargetFrameworkAttribute in non-test projects.
+         This avoids duplicate TargetFrameworkAttribute when external tools (e.g. Godot export)
+         also emit that attribute. If you prefer to opt-out only for specific projects,
+         instead add this property to those .csproj files. -->
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <!-- Prevent SDK from auto-generating other assembly attributes (Company, Product, Version, etc.).
+         Godot export or other tools may emit these attributes; disable SDK generation to avoid duplicates. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- For test projects, allow SDK to generate TargetFrameworkAttribute and AssemblyInfo to ensure
+       test adapters discover the framework and tests correctly. -->
+</Project>

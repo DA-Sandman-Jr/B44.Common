@@ -1,0 +1,12 @@
+<!-- Paste into each game's Tests csproj (replace GAME). Fails the build if a
+     Godot dependency sneaks into the test/Core chain. -->
+<Target Name="PreventGodotDependencies" BeforeTargets="ResolveReferences">
+  <Error Condition="'@(ProjectReference->WithMetadataValue('Filename','GAME'))' != ''"
+         Text="GAME.Tests must remain core-only. Do not reference GAME.csproj; move testable logic into GAME.Core instead." />
+  <Error Condition="'@(PackageReference->WithMetadataValue('Identity','Godot.NET.Sdk'))' != ''"
+         Text="GAME.Tests must not reference Godot packages." />
+  <Error Condition="'@(PackageReference->WithMetadataValue('Identity','GodotSharp'))' != ''"
+         Text="GAME.Tests must not reference Godot packages." />
+  <Error Condition="'@(Reference->WithMetadataValue('Identity','GodotSharp'))' != ''"
+         Text="GAME.Tests must not reference Godot assemblies." />
+</Target>

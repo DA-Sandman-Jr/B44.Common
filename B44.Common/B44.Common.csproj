@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>B44.Common</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>DA-Sandman-Jr</Authors>
+    <Company>B44</Company>
+    <Description>Engine-free shared primitives for B44 games: value types (Vec2, Rgba), structured logging, injected randomness and time, atomic JSON persistence, and HUD number formatting.</Description>
+    <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
+    <RootNamespace>B44.Common</RootNamespace>
+    <!-- Embed sources and the PDB in the assembly so consuming repos (and the
+         agents working in them) can read and step into package code without a
+         separate symbols feed. GitHub Packages does not host snupkg. -->
+    <DebugType>embedded</DebugType>
+    <EmbedAllSources>true</EmbedAllSources>
+  </PropertyGroup>
+</Project>
