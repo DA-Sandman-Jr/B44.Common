@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- netstandard2.0: the config/analyzer-carrier convention — restorable
+         by every consumer TFM (net6 through net10). No lib ships anyway. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>B44.Standards</PackageId>
     <Version>0.4.0</Version>
     <Authors>DA-Sandman-Jr</Authors>

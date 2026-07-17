@@ -1,12 +1,24 @@
 <Project>
-  <!-- Engine-free-core enforcement. A project opts in with:
-         <B44EngineFreeCore>true</B44EngineFreeCore>
-       Two layers: banned symbols catch Godot API *use* and ambient
-       nondeterminism at the compiler; the reference check below catches a
-       Godot dependency that sneaks into the resolved graph even when unused
-       (something no symbol analyzer can reject). -->
+  <!-- Layered enforcement, opt-in per project:
+         <B44EngineFreeCore>true</B44EngineFreeCore>  — Godot-free Core of a
+             game: bans Godot APIs at the symbol level, fails the build if a
+             Godot assembly appears in the resolved reference graph (a symbol
+             analyzer can't reject an unused dependency), and implies
+             determinism enforcement below.
+         <B44Deterministic>true</B44Deterministic>    — any B44 project that
+             wants ambient time/randomness banned (injected TimeProvider /
+             explicit random source). Games' Cores get it via the flag above;
+             non-game repos can opt in directly. -->
+  <PropertyGroup>
+    <B44Deterministic Condition="'$(B44Deterministic)' == '' and '$(B44EngineFreeCore)' == 'true'">true</B44Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(B44Deterministic)' == 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../config/BannedSymbols.Determinism.txt" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(B44EngineFreeCore)' == 'true'">
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../config/BannedSymbols.Core.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../config/BannedSymbols.Godot.txt" />
   </ItemGroup>
 
   <Target Name="B44EnforceEngineFreeCore"

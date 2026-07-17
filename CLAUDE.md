@@ -105,7 +105,7 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
   relative-to-baseline no-growth).
 - `B44.Standards/` — build policy as a package (analyzers via plain package
   dependencies, buildTransitive props/targets, `config/` globalconfigs +
-  `BannedSymbols.Core.txt` + `CodeMetricsConfig.txt`). Severity layering rule:
+  `BannedSymbols.Determinism.txt`/`BannedSymbols.Godot.txt` + `CodeMetricsConfig.txt`; determinism bans are usable by ANY B44 repo via B44Deterministic=true, Godot bans ride B44EngineFreeCore). Severity layering rule:
   repo `.editorconfig` owns style/whitespace ONLY — analyzer severities live
   in the packaged globalconfig, because `.editorconfig` outranks global
   configs and creates unoverridable conflicts (CA1861 taught us). Tuning

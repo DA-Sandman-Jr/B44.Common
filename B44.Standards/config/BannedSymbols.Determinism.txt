@@ -1,0 +1,7 @@
+P:System.DateTime.Now;Inject the BCL TimeProvider and read GetUtcNow() — ambient local time breaks deterministic tests
+P:System.DateTime.UtcNow;Inject the BCL TimeProvider and read GetUtcNow()
+P:System.DateTimeOffset.Now;Inject the BCL TimeProvider and read GetUtcNow()
+P:System.DateTimeOffset.UtcNow;Inject the BCL TimeProvider and read GetUtcNow()
+M:System.Random.#ctor;Inject an explicit random source (the games use B44.Common.Interfaces.IRandomSource) — ambient RNG breaks deterministic tests
+M:System.Random.#ctor(System.Int32);Inject an explicit random source and pass the seed to it
+P:System.Random.Shared;Inject an explicit random source — shared ambient RNG breaks deterministic tests

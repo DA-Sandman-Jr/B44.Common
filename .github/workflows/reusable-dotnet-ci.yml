@@ -18,9 +18,10 @@ on:
   workflow_call:
     inputs:
       core-project:
-        description: Path to the engine-free Core csproj
-        required: true
+        description: Path to the engine-free Core csproj (game repos). Omit in non-game repos to build the solution instead.
+        required: false
         type: string
+        default: ''
       test-project:
         description: Path to the test csproj
         required: true
@@ -69,7 +70,12 @@ jobs:
           dotnet format "$SLN" --verify-no-changes
 
       - name: Build Core (no-Godot invariant)
+        if: inputs.core-project != ''
         run: dotnet build ${{ inputs.core-project }} -c Debug
+
+      - name: Build solution
+        if: inputs.core-project == ''
+        run: dotnet build -c Debug
 
       - name: Build test project
         run: dotnet build ${{ inputs.test-project }} -c Debug
