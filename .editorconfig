@@ -169,7 +169,6 @@ dotnet_diagnostic.IDE0060.severity = suggestion   # Unused parameter (Godot sign
 dotnet_diagnostic.CA1510.severity = warning   # Use ArgumentNullException.ThrowIfNull
 dotnet_diagnostic.CA1822.severity = warning   # Mark members as static when possible
 dotnet_diagnostic.CA1859.severity = warning   # Use more derived return type for performance
-dotnet_diagnostic.CA1861.severity = warning   # Prefer static readonly over constant array arguments
 
 dotnet_diagnostic.xUnit1042.severity = warning   # Use TheoryData<> over object[]
 dotnet_diagnostic.xUnit2032.severity = warning   # Assert.IsAssignableFrom is confusing; use IsType with exactMatch

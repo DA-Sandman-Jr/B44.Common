@@ -11,7 +11,28 @@ package on GitHub Packages, plus the canonical B44-wide standards under
 | `B44.Common` | `Rgba`, `TimeProviderExtensions` | GameB / all games |
 | `B44.Common.Diagnostics` | `StructuredGameLogger`, `LogCategory` (name struct — games declare their own constants), `LogSeverity`, `LogVerbosityConfig`, `StructuredLogEvent` | merge of all three games |
 | `B44.Common.Interfaces` | `IRandomSource` (+ default-interface `NextInt`/`NextDouble`), `SystemRandomSource` | merge of GameB + GameC |
-| `B44.Common.Persistence` | `IRepository<T>`, `AtomicJsonFileStore<T>`, `InMemoryRepository<T>`, `RepositoryFactory.CreateWithFallback`, `StoreException` | genericized from GameC |
+| `B44.Common.Persistence` | `IRepository<T>`, `AtomicJsonFileStore<T>`, `InMemoryRepository<T>`, `RepositoryFactory.CreateWithFallback`, `SavePaths`, `StoreException` | genericized from GameC |
+| `B44.Common.Quality` | `SourceSizeRatchet` (baseline-pinned file-size check each repo runs from its test suite) | new — mechanizes the Architecture Ratchet |
+
+## B44.Standards — build policy as a package
+
+The sibling `B44.Standards` package carries the studio's enforcement stack and
+applies it to any referencing project via buildTransitive assets: SDK analyzers
+at `AnalysisMode=Recommended`, a curated Meziantou allowlist + banned-API rules
+(severities in `config/B44.globalconfig`, with a `*.Tests` overlay),
+`CA1502`/`MA0051` complexity+length thresholds, NuGet audit on restore, and —
+for projects that set `<B44EngineFreeCore>true</B44EngineFreeCore>` — the
+banned-symbols list (no Godot APIs, no ambient time/randomness) plus an MSBuild
+guard that fails the build if a Godot assembly appears in the resolved
+reference graph. Consume with:
+
+```xml
+<PackageReference Include="B44.Standards" Version="x.y.z" PrivateAssets="all" />
+```
+
+This repo dogfoods the same files via `Directory.Build.props`. CI for game
+repos: call `.github/workflows/reusable-dotnet-ci.yml` (workflow_call; repo
+Actions access is set to same-owner).
 
 Deliberately NOT here: `*ActionResult` shapes, content catalogs, game rules or
 tuning, anything Godot-side. Sources and PDB are embedded in the assembly.

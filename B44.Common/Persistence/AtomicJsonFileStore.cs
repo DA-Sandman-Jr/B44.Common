@@ -9,8 +9,8 @@ namespace B44.Common.Persistence;
 /// Saves flush to disk before a write-then-rename swap, and the previous good
 /// save is kept as <c>.bak</c>; <see cref="Load"/> falls back to that backup
 /// when the main file is missing, torn, or corrupt. Engine-free: callers
-/// resolve the save path themselves — <see cref="ResolveAppDataPath"/> covers
-/// the common per-user app-data case.
+/// resolve the save path themselves — <see cref="SavePaths.ResolveAppData"/>
+/// covers the common per-user app-data case.
 /// Format policy is the caller's: pre-release, B44 games reset unreadable
 /// saves via <see cref="RepositoryFactory"/>; released games layer a
 /// versioned envelope + migrations on top. The store stays format-agnostic.
@@ -46,25 +46,6 @@ public sealed class AtomicJsonFileStore<T> : IRepository<T>
     private string BackupPath => _savePath + ".bak";
 
     private string TempPath => _savePath + ".tmp";
-
-    /// <summary>
-    /// Resolves a save path under the per-user application-data directory
-    /// (e.g. <c>%APPDATA%/MyGame/save.json</c>), creating the directory.
-    /// </summary>
-    public static string ResolveAppDataPath(string appFolderName, string fileName)
-    {
-        string dataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        if (string.IsNullOrWhiteSpace(dataDir))
-        {
-            throw new StoreException(
-                "Unable to resolve the application data directory for the save file.",
-                new InvalidOperationException("Application data path was null or empty."));
-        }
-
-        string saveDirectory = Path.Combine(dataDir, appFolderName);
-        Directory.CreateDirectory(saveDirectory);
-        return Path.Combine(saveDirectory, fileName);
-    }
 
     public T? Load()
     {

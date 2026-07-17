@@ -1,0 +1,8 @@
+N:Godot;Godot belongs in the presentation project, never in an engine-free Core
+P:System.DateTime.Now;Inject the BCL TimeProvider and read GetUtcNow() — ambient local time breaks deterministic tests
+P:System.DateTime.UtcNow;Inject the BCL TimeProvider and read GetUtcNow() (B44.Common.TimeProviderExtensions.GetUtcNowUnixSeconds for unix seconds)
+P:System.DateTimeOffset.Now;Inject the BCL TimeProvider and read GetUtcNow()
+P:System.DateTimeOffset.UtcNow;Inject the BCL TimeProvider and read GetUtcNow()
+M:System.Random.#ctor;Inject B44.Common.Interfaces.IRandomSource (SystemRandomSource in production, seeded or scripted in tests)
+M:System.Random.#ctor(System.Int32);Inject B44.Common.Interfaces.IRandomSource — pass the seed to SystemRandomSource instead
+P:System.Random.Shared;Inject B44.Common.Interfaces.IRandomSource — shared ambient RNG breaks deterministic tests

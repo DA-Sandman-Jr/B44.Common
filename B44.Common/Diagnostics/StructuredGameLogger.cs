@@ -108,7 +108,8 @@ public sealed class StructuredGameLogger(Action<StructuredLogEvent, string>? sin
         }
 
         string correlationId = EnsureCorrelation(category.Name.ToLowerInvariant());
-        IReadOnlyDictionary<string, object?> normalizedFields = fields ?? new Dictionary<string, object?>();
+        IReadOnlyDictionary<string, object?> normalizedFields =
+            fields ?? new Dictionary<string, object?>(StringComparer.Ordinal);
         var evt = new StructuredLogEvent(category, severity, eventName, correlationId, normalizedFields);
         sink?.Invoke(evt, Format(evt));
     }

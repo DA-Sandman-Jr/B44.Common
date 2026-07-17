@@ -1,0 +1,4 @@
+# B44 code-metrics thresholds (consumed by the CA150x analyzers).
+# CA1502: cyclomatic complexity per method. SDK default is 25; 15 is the B44
+# guardrail (see B44.globalconfig for rationale).
+CA1502: 15

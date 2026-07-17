@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>B44.Standards</PackageId>
+    <Version>0.4.0</Version>
+    <Authors>DA-Sandman-Jr</Authors>
+    <Company>B44</Company>
+    <Description>B44 studio build policy as a package: analyzer stack (SDK Recommended + curated Meziantou + banned APIs), severity globalconfig, code-metrics thresholds, and the engine-free-core build guard. Reference with PrivateAssets=all.</Description>
+    <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
+    <!-- Policy-only package: no compiled library, no content in lib/. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Plain dependencies (NOT PrivateAssets) so consumers get the analyzers
+         transitively — package props must not manufacture PackageReferences. -->
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.123" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\**" Pack="true" PackagePath="buildTransitive" />
+    <None Include="config\**" Pack="true" PackagePath="config" />
+  </ItemGroup>
+</Project>

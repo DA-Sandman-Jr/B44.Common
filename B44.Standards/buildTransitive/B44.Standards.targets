@@ -1,0 +1,22 @@
+<Project>
+  <!-- Engine-free-core enforcement. A project opts in with:
+         <B44EngineFreeCore>true</B44EngineFreeCore>
+       Two layers: banned symbols catch Godot API *use* and ambient
+       nondeterminism at the compiler; the reference check below catches a
+       Godot dependency that sneaks into the resolved graph even when unused
+       (something no symbol analyzer can reject). -->
+  <ItemGroup Condition="'$(B44EngineFreeCore)' == 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../config/BannedSymbols.Core.txt" />
+  </ItemGroup>
+
+  <Target Name="B44EnforceEngineFreeCore"
+          AfterTargets="ResolveAssemblyReferences"
+          Condition="'$(B44EngineFreeCore)' == 'true'">
+    <ItemGroup>
+      <B44GodotReference Include="@(ReferencePath)"
+                         Condition="$([System.String]::new('%(FileName)').StartsWith('GodotSharp'))" />
+    </ItemGroup>
+    <Error Condition="'@(B44GodotReference)' != ''"
+           Text="$(MSBuildProjectName) is an engine-free Core project but resolves a Godot reference (%(B44GodotReference.FileName)). Remove the Godot dependency; Core must build and test without the engine. Godot-facing code belongs in the presentation project." />
+  </Target>
+</Project>

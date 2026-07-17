@@ -4,8 +4,8 @@ namespace B44.Common;
 
 /// <summary>
 /// Engine-free RGBA color with float components in [0, 1]. Each game bridges
-/// to <c>Godot.Color</c> at the Godot boundary; mirrors the <see cref="Vec2"/>
-/// ↔ <c>Godot.Vector2</c> convention.
+/// to <c>Godot.Color</c> at the Godot boundary; mirrors the
+/// <c>System.Numerics.Vector2</c> ↔ <c>Godot.Vector2</c> convention.
 /// </summary>
 public readonly struct Rgba : IEquatable<Rgba>
 {

@@ -1,0 +1,12 @@
+# Test-project severity overlay (higher global_level wins over B44.globalconfig).
+# Registered by B44.Standards.props for projects named *.Tests.
+is_global = true
+global_level = 200
+
+# Method_Scenario_Expectation underscore naming is the sanctioned xunit style
+# across every B44 test suite.
+dotnet_diagnostic.CA1707.severity = none
+# IDisposable ceremony (GC.SuppressFinalize) is noise on sealed test fixtures.
+dotnet_diagnostic.CA1816.severity = none
+# Constant-array-argument caching is irrelevant at test call frequency.
+dotnet_diagnostic.CA1861.severity = none

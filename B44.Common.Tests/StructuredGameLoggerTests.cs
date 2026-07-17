@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using B44.Common.Diagnostics;
 using Xunit;
@@ -41,7 +42,7 @@ public class StructuredGameLoggerTests
             LogSeverity.Info,
             "test_event",
             "corr-123",
-            new Dictionary<string, object?>());
+            new Dictionary<string, object?>(StringComparer.Ordinal));
 
         string result = StructuredGameLogger.Format(evt);
 
@@ -54,7 +55,7 @@ public class StructuredGameLoggerTests
     [Fact]
     public void Format_WithFields_IncludesKeyValuePairs()
     {
-        var fields = new Dictionary<string, object?> { ["foo"] = "bar", ["count"] = 3 };
+        var fields = new Dictionary<string, object?>(StringComparer.Ordinal) { ["foo"] = "bar", ["count"] = 3 };
         var evt = new StructuredLogEvent(Categories.Save, LogSeverity.Warning, "some_event", "x", fields);
 
         string result = StructuredGameLogger.Format(evt);
@@ -67,7 +68,7 @@ public class StructuredGameLoggerTests
     public void Format_NoFields_DoesNotContainSeparator()
     {
         var evt = new StructuredLogEvent(Categories.Flow, LogSeverity.Debug, "no_fields", "x",
-            new Dictionary<string, object?>());
+            new Dictionary<string, object?>(StringComparer.Ordinal));
 
         string result = StructuredGameLogger.Format(evt);
 

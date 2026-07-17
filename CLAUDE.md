@@ -100,7 +100,20 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
 
 - `B44.Common/` — the package. Root namespace `B44.Common`; sub-namespaces
   mirror the games' old folder names (`Diagnostics`, `Interfaces`,
-  `Persistence`) so migration was/is a mechanical namespace swap.
+  `Persistence`) so migration was/is a mechanical namespace swap. `Quality/`
+  holds `SourceSizeRatchet` — the baseline-pinned file-size check (the one
+  custom quality tool alongside the MSBuild guard; no analyzer implements
+  relative-to-baseline no-growth).
+- `B44.Standards/` — build policy as a package (analyzers via plain package
+  dependencies, buildTransitive props/targets, `config/` globalconfigs +
+  `BannedSymbols.Core.txt` + `CodeMetricsConfig.txt`). Severity layering rule:
+  repo `.editorconfig` owns style/whitespace ONLY — analyzer severities live
+  in the packaged globalconfig, because `.editorconfig` outranks global
+  configs and creates unoverridable conflicts (CA1861 taught us). Tuning
+  changes go through this package, never per-repo editorconfigs.
+  `MA0048` (one type per file) is deliberately NOT enabled; sanctioned
+  multi-type files are B44 style. `TreatWarningsAsErrors` is staged per repo
+  AFTER its allowlist is tuned, not day one.
 - `B44.Common.Tests/` — xunit.v3. `<TestingPlatformDotnetTestSupport>true`
   is required for `dotnet test` to discover xunit.v3 on current SDKs.
 - `templates/` — canonical copies of the cross-repo standards (build props/

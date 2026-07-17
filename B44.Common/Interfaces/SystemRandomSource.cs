@@ -12,6 +12,9 @@ public sealed class SystemRandomSource : IRandomSource
 {
     private Random _random;
 
+    // RS0030: constructing System.Random is banned everywhere else — this
+    // class IS the sanctioned wrapper the ban points callers to.
+#pragma warning disable RS0030
     public SystemRandomSource()
     {
         _random = new Random();
@@ -31,6 +34,7 @@ public sealed class SystemRandomSource : IRandomSource
     {
         _random = new Random();
     }
+#pragma warning restore RS0030
 
     public int Randi()
     {

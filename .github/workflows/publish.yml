@@ -28,10 +28,15 @@ jobs:
         run: dotnet test B44.Common.Tests/B44.Common.Tests.csproj -c Release
 
       - name: Pack
-        run: dotnet pack B44.Common/B44.Common.csproj -c Release /p:Version=${GITHUB_REF_NAME#v}
+        run: |
+          dotnet pack B44.Common/B44.Common.csproj -c Release /p:Version=${GITHUB_REF_NAME#v}
+          dotnet pack B44.Standards/B44.Standards.csproj -c Release /p:Version=${GITHUB_REF_NAME#v}
 
       - name: Push to GitHub Packages
         run: |
-          dotnet nuget push B44.Common/bin/Release/*.nupkg \
+          dotnet nuget push "B44.Common/bin/Release/*.nupkg" \
+            --source https://nuget.pkg.github.com/DA-Sandman-Jr/index.json \
+            --api-key ${{ secrets.GITHUB_TOKEN }}
+          dotnet nuget push "B44.Standards/bin/Release/*.nupkg" \
             --source https://nuget.pkg.github.com/DA-Sandman-Jr/index.json \
             --api-key ${{ secrets.GITHUB_TOKEN }}

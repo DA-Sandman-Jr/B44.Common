@@ -1,0 +1,27 @@
+<Project>
+  <!-- B44 studio build policy. Same file works packaged (buildTransitive/) and
+       imported in-repo from a sibling clone — the ../config relative layout is
+       identical in both. Repo-specific properties (Nullable, Godot workarounds)
+       stay in each repo's Directory.Build.props. -->
+  <PropertyGroup>
+    <AnalysisMode Condition="'$(AnalysisMode)' == ''">Recommended</AnalysisMode>
+    <!-- Meziantou: everything off, then the curated allowlist in
+         B44.globalconfig opts individual rules back in. -->
+    <MeziantouAnalysisMode Condition="'$(MeziantouAnalysisMode)' == ''">None</MeziantouAnalysisMode>
+
+    <!-- Vulnerable-dependency audit on restore, direct AND transitive.
+         Explicit because net8/net10 SDKs have shipped different defaults. -->
+    <NuGetAudit Condition="'$(NuGetAudit)' == ''">true</NuGetAudit>
+    <NuGetAuditMode Condition="'$(NuGetAuditMode)' == ''">all</NuGetAuditMode>
+    <NuGetAuditLevel Condition="'$(NuGetAuditLevel)' == ''">moderate</NuGetAuditLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)../config/B44.globalconfig" />
+    <!-- Test projects (by B44 convention, *.Tests) get a severity overlay. -->
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)../config/B44.Tests.globalconfig"
+                               Condition="$(MSBuildProjectName.EndsWith('.Tests'))" />
+    <!-- CA150x code-metrics thresholds (file name is significant). -->
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)../config/CodeMetricsConfig.txt" />
+  </ItemGroup>
+</Project>
