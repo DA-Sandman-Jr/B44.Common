@@ -13,6 +13,12 @@ dotnet_diagnostic.CA1502.severity = warning
 # ── Banned APIs (RS0030 fires from BannedSymbols lists) ────────────────────
 dotnet_diagnostic.RS0030.severity = error
 
+# ── Godot-repo accommodation ───────────────────────────────────────────────
+# Godot repos must set GenerateAssemblyInfo=false (the export pipeline emits
+# its own attributes), which makes CA1016 (assembly version) unsatisfiable.
+# Package projects satisfy it via <Version> regardless.
+dotnet_diagnostic.CA1016.severity = none
+
 # ── Meziantou curated allowlist (MeziantouAnalysisMode=None turns the rest
 #    off; these opt back in). Defect-focused; style and speculative-perf
 #    rules deliberately excluded. Validate empirically before promoting any
