@@ -63,6 +63,30 @@ Revisit and swap to a standard framework if ANY of these appears:
 Migration cost is deliberately contained: all call sites go through this one
 type, so a swap is a package change + mechanical call-site updates.
 
+## Godot-Ecosystem Survey (2026-07-16)
+
+The Godot-C# ecosystem (Chickensoft et al., verified active as of 2026-04)
+was surveyed alongside the mainstream libraries. Structural rule: anything
+Godot-specific is definitionally unable to replace code behind the
+engine-free wall — it can only compete with the thin Godot-side adapters.
+
+- **Closest competitor:** `Chickensoft.Log` + `Log.Godot` — engine-free core
+  with a Godot writer, same architecture as ours. Rejected on fit: string
+  Print/Warn/Err vs our structured event-name+fields, per-category
+  verbosity, and correlation scopes.
+- **Chickensoft.Serialization / SaveFileBuilder:** headline feature is
+  serializing Godot types — which B44 saves deliberately never contain.
+  Worth re-reading for AOT/polymorphism design ideas when the 1.0
+  versioned-envelope work happens; not a dependency to take.
+- **Godot-side "buy, don't build" pointers** (future gaps, not package
+  concerns): in-engine scene testing → GdUnit4 / GoDotTest +
+  GodotTestDriver; node-binding boilerplate → `[Node]` source generators
+  (GodotUtilities, Chickensoft AutoInject) as the alternative to the
+  `*Paths.cs` convention.
+- Caveat applying to all of these: small-org projects whose cadence is
+  chained to engine releases — the "Godot-side code churns with engine
+  versions" bar applies to Godot-side dependencies too.
+
 ## Versioning & Publish
 
 - `0.x.y` while the API churns; breaking changes bump the minor version.
