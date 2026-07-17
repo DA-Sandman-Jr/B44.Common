@@ -3,6 +3,9 @@
     <!-- netstandard2.0: the config/analyzer-carrier convention — restorable
          by every consumer TFM (net6 through net10). No lib ships anyway. -->
     <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- No source ships; latest just keeps the repo-wide Nullable=enable
+         from tripping netstandard2.0's C# 7.3 default. -->
+    <LangVersion>latest</LangVersion>
     <PackageId>B44.Standards</PackageId>
     <Version>0.4.0</Version>
     <Authors>DA-Sandman-Jr</Authors>
