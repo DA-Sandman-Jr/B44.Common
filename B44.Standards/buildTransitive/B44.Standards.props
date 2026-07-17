@@ -4,6 +4,10 @@
        identical in both. Repo-specific properties (Nullable, Godot workarounds)
        stay in each repo's Directory.Build.props. -->
   <PropertyGroup>
+    <!-- Marker for sibling-clone consumers: gate analyzer PackageReferences
+         on this so a machine without the clone gets NO third-party analyzers
+         instead of their ungoverned defaults (fully-on or cleanly-off). -->
+    <B44StandardsImported>true</B44StandardsImported>
     <AnalysisMode Condition="'$(AnalysisMode)' == ''">Recommended</AnalysisMode>
     <!-- Meziantou: everything off, then the curated allowlist in
          B44.globalconfig opts individual rules back in. -->
