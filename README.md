@@ -73,6 +73,11 @@ Swap the `PackageReference` for a local `ProjectReference` to the sibling
 clone while developing, or pack locally into a folder feed. Publish a tag and
 restore the `PackageReference` before merging.
 
+## License
+
+None — all rights reserved. The source is public for reference; it is not
+licensed for reuse.
+
 ## Publishing
 
 Push a version tag: `git tag v0.2.0 && git push origin v0.2.0`. The publish
