@@ -62,7 +62,29 @@ Revisit and swap to a standard framework if ANY of these appears:
 Migration cost is deliberately contained: all call sites go through this one
 type, so a swap is a package change + mechanical call-site updates.
 
-## Godot-Ecosystem Survey (2026-07-16)
+## Analyzer Scope Review — All-B44 (2026-07-17) & Flip Conditions
+
+Measured the non-game repos before generalizing (async/threading/culture
+greps): they are async HTTP-client apps with ZERO threading primitives, zero
+sync-over-async, zero ambient DateTime, zero culture-risky formatting. Hence:
+`MA0040` (forward in-scope CancellationToken) added for that profile;
+everything else unchanged. Rejected-with-evidence, revisit only on the flip:
+
+1. **Microsoft.VisualStudio.Threading.Analyzers** — zero threading exists
+   anywhere. Flip: any repo introduces `Task.Run`/locks/a UI sync-context.
+2. **Culture rules (`MA0011`/`CA1305`)** — zero risky formatting call sites.
+   Flip: a repo starts producing parsed or culture-sensitive user strings.
+3. **Security analyzers** — offline games + personal HTTP apps. Flip: any
+   repo handles credentials/PII (note: BFA.Server + Azure Functions exist —
+   evaluate at THEIR standards adoption, not before).
+4. **PublicApiAnalyzers on B44.Common** — churn pre-1.0. Flip: first 1.0
+   game ships against a pinned B44.Common.
+
+Adoption notes for the non-games: repos without a Core project (single-csproj
+apps, servers) take the analyzer layer only — no `B44EngineFreeCore`;
+`B44Deterministic=true` is free where measured (zero ambient time). Server
+components (ASP.NET/Functions) keep their framework logging (MEL) — the
+custom logger's decision record already scopes it to the games.
 
 The Godot-C# ecosystem (Chickensoft et al., verified active as of 2026-04)
 was surveyed alongside the mainstream libraries. Structural rule: anything

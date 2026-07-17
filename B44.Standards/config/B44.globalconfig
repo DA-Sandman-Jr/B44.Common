@@ -37,6 +37,10 @@ dotnet_diagnostic.MA0042.severity = warning
 dotnet_diagnostic.MA0134.severity = warning
 dotnet_diagnostic.MA0147.severity = warning
 dotnet_diagnostic.MA0155.severity = warning
+# Forward an in-scope CancellationToken (added for the HTTP-client repos,
+# where CT plumbing is heavy and forwarding gaps are the classic bug;
+# near-zero noise in the games, which have no tokens in scope).
+dotnet_diagnostic.MA0040.severity = warning
 # Structure: method length (60 lines / 40 statements, configured below).
 # MA0048 (one type per file) intentionally NOT enabled — cohesive multi-type
 # files (StructuredGameLogger.cs, catalogs) are sanctioned B44 style.
