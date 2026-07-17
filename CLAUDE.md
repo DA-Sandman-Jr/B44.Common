@@ -1,8 +1,7 @@
 # B44.Common — Shared Engine-Free Primitives
 
-Private NuGet package (`B44.Common` on GitHub Packages) consumed by the three
-B44 game repos: GameA, GameB, GameC. Also the
-canonical home for B44-wide standards under `/templates`.
+NuGet package (`B44.Common` on GitHub Packages) consumed by the B44 game
+repos. Also the canonical home for B44-wide standards under `/templates`.
 
 ## Hard Rules
 
@@ -38,8 +37,8 @@ broken its own file format between majors) plus native-binary export friction
 (SQLite). Durability concerns are answered in-store instead: flush-to-disk
 before the rename, and `.bak` rotation with automatic recovery on load — the
 tests pin all of it. Versioned-envelope/migration helpers land in this package
-only when a second game needs them at 1.0 (GameA' `SaveFileEnvelope` is the
-first occurrence).
+only when a second game needs them at 1.0 (one game's save-envelope
+implementation is the first occurrence).
 
 ## Custom Logger — Decision Record & Flip Conditions
 

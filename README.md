@@ -8,10 +8,10 @@ package on GitHub Packages, plus the canonical B44-wide standards under
 
 | Namespace | Types | Origin |
 |---|---|---|
-| `B44.Common` | `Rgba`, `TimeProviderExtensions` | GameB / all games |
+| `B44.Common` | `Rgba`, `TimeProviderExtensions` | merged from the games |
 | `B44.Common.Diagnostics` | `StructuredGameLogger`, `LogCategory` (name struct — games declare their own constants), `LogSeverity`, `LogVerbosityConfig`, `StructuredLogEvent` | merge of all three games |
-| `B44.Common.Interfaces` | `IRandomSource` (+ default-interface `NextInt`/`NextDouble`), `SystemRandomSource` | merge of GameB + GameC |
-| `B44.Common.Persistence` | `IRepository<T>`, `AtomicJsonFileStore<T>`, `InMemoryRepository<T>`, `RepositoryFactory.CreateWithFallback`, `SavePaths`, `StoreException` | genericized from GameC |
+| `B44.Common.Interfaces` | `IRandomSource` (+ default-interface `NextInt`/`NextDouble`), `SystemRandomSource` | merged from the games |
+| `B44.Common.Persistence` | `IRepository<T>`, `AtomicJsonFileStore<T>`, `InMemoryRepository<T>`, `RepositoryFactory.CreateWithFallback`, `SavePaths`, `StoreException` | genericized from one game's store |
 | `B44.Common.Quality` | `SourceSizeRatchet` (baseline-pinned file-size check each repo runs from its test suite) | new — mechanizes the Architecture Ratchet |
 
 ## B44.Standards — build policy as a package
@@ -47,9 +47,7 @@ Deliberately replaced by the BCL instead of shipping our own (v0.2):
   call sites clean. The old `ITimeSource` family is gone.
 
 Evicted in v0.3 for failing the second-occurrence rule (both were
-single-consumer): `NumberFormatter` (lives in GameC, its only
-user) and `SafeConvert` (deleted outright — it had zero call sites even in
-GameA). Re-admit either the moment a second game actually needs it.
+single-consumer): `NumberFormatter` (lives in the one game that uses it) and `SafeConvert` (deleted outright — it had zero call sites even in its origin game). Re-admit either the moment a second game actually needs it.
 
 ## Consuming (game repos)
 
