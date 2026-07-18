@@ -12,6 +12,7 @@
     <Company>B44</Company>
     <Description>B44 studio build policy as a package: analyzer stack (SDK Recommended + curated Meziantou + banned APIs), severity globalconfig, code-metrics thresholds, and the engine-free-core build guard. Reference with PrivateAssets=all.</Description>
     <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- Policy-only package: no compiled library, no content in lib/. -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <DevelopmentDependency>true</DevelopmentDependency>
@@ -26,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
     <None Include="buildTransitive\**" Pack="true" PackagePath="buildTransitive" />
     <None Include="config\**" Pack="true" PackagePath="config" />
   </ItemGroup>

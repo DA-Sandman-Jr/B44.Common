@@ -7,6 +7,7 @@
     <Company>B44</Company>
     <Description>Engine-free shared primitives for B44 games: Rgba, structured logging, injected randomness, TimeProvider helpers, and durable atomic JSON persistence.</Description>
     <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>B44.Common</RootNamespace>
     <!-- Embed sources and the PDB in the assembly so consuming repos (and the
          agents working in them) can read and step into package code without a
@@ -17,4 +18,8 @@
          resolved-reference guard). -->
     <B44EngineFreeCore>true</B44EngineFreeCore>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>
