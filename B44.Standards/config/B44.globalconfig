@@ -18,6 +18,10 @@ dotnet_diagnostic.RS0030.severity = error
 # its own attributes), which makes CA1016 (assembly version) unsatisfiable.
 # Package projects satisfy it via <Version> regardless.
 dotnet_diagnostic.CA1016.severity = none
+# CA1001 fires on Godot scene controllers holding engine resources whose
+# lifetime the scene tree owns — engine-managed, not a leak. Core disposables
+# are rare and review-caught.
+dotnet_diagnostic.CA1001.severity = none
 
 # ── Meziantou curated allowlist (MeziantouAnalysisMode=None turns the rest
 #    off; these opt back in). Defect-focused; style and speculative-perf
@@ -50,6 +54,11 @@ dotnet_diagnostic.MA0040.severity = warning
 # Structure: method length (60 lines / 40 statements, configured below).
 # MA0048 (one type per file) intentionally NOT enabled — cohesive multi-type
 # files (StructuredGameLogger.cs, catalogs) are sanctioned B44 style.
-dotnet_diagnostic.MA0051.severity = warning
+# MA0051 is ADVISORY (suggestion): existing over-long methods are each
+# repo's refactor backlog, and warning severity would fail the dotnet-format
+# gate on findings that have no auto-fix. The ratchet test owns the hard
+# structural limits; promote MA0051 per repo alongside TreatWarningsAsErrors
+# once its backlog is cleared.
+dotnet_diagnostic.MA0051.severity = suggestion
 MA0051.maximum_lines_per_method = 60
 MA0051.maximum_statements_per_method = 40
