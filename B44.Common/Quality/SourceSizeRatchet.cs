@@ -30,13 +30,20 @@ public static class SourceSizeRatchet
     /// (recursively, excluding bin/obj) against the baseline at
     /// <paramref name="baselinePath"/>. A missing baseline file means an
     /// empty baseline. Returns violations; empty means the ratchet holds.
+    /// <paramref name="excludeDirs"/> names TOP-LEVEL directories under the
+    /// root to skip entirely (e.g. the test project and ".godot" when
+    /// scanning a game repo's root — tests may exceed the ratchet by
+    /// doctrine, and engine folders hold generated sources).
     /// </summary>
-    public static IReadOnlyList<RatchetViolation> Check(string productionRoot, string baselinePath)
+    public static IReadOnlyList<RatchetViolation> Check(
+        string productionRoot,
+        string baselinePath,
+        IEnumerable<string>? excludeDirs = null)
     {
         Dictionary<string, int> baseline = ReadBaseline(baselinePath);
         var violations = new List<RatchetViolation>();
 
-        foreach ((string relativePath, int lines) in EnumerateSources(productionRoot))
+        foreach ((string relativePath, int lines) in EnumerateSources(productionRoot, excludeDirs))
         {
             if (baseline.TryGetValue(relativePath, out int allowed))
             {
@@ -67,9 +74,9 @@ public static class SourceSizeRatchet
     /// <see cref="TrackThresholdLines"/>. Existing entry comments are lost —
     /// re-add reasons for deliberate exceptions.
     /// </summary>
-    public static void WriteBaseline(string productionRoot, string baselinePath)
+    public static void WriteBaseline(string productionRoot, string baselinePath, IEnumerable<string>? excludeDirs = null)
     {
-        IEnumerable<string> entries = EnumerateSources(productionRoot)
+        IEnumerable<string> entries = EnumerateSources(productionRoot, excludeDirs)
             .Where(s => s.Lines > TrackThresholdLines)
             .OrderBy(s => s.RelativePath, StringComparer.Ordinal)
             .Select(s => $"{s.RelativePath} = {s.Lines}");
@@ -82,13 +89,17 @@ public static class SourceSizeRatchet
         }.Concat(entries));
     }
 
-    private static IEnumerable<(string RelativePath, int Lines)> EnumerateSources(string productionRoot)
+    private static IEnumerable<(string RelativePath, int Lines)> EnumerateSources(
+        string productionRoot,
+        IEnumerable<string>? excludeDirs)
     {
         string root = Path.GetFullPath(productionRoot);
+        var excluded = new HashSet<string>(excludeDirs ?? Array.Empty<string>(), StringComparer.Ordinal);
         foreach (string file in Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories))
         {
             string relative = Path.GetRelativePath(root, file).Replace('\\', '/');
-            if (relative.Split('/').Any(part => part is "bin" or "obj"))
+            string[] parts = relative.Split('/');
+            if (parts.Any(part => part is "bin" or "obj") || excluded.Contains(parts[0]))
             {
                 continue;
             }

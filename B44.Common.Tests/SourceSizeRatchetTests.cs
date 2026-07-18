@@ -90,6 +90,21 @@ public class SourceSizeRatchetTests : IDisposable
     }
 
     [Fact]
+    public void ExcludeDirs_SkipsTopLevelDirectoriesOnly()
+    {
+        WriteSource("Game.Tests/HugeTests.cs", 9_000);
+        WriteSource(".godot/mono/Generated.cs", 9_000);
+        WriteSource("Core/Game.Tests/NestedSameName.cs", 600);
+
+        IReadOnlyList<RatchetViolation> violations = SourceSizeRatchet.Check(
+            SourceRoot, BaselinePath, new[] { "Game.Tests", ".godot" });
+
+        // Top-level exclusions apply; the same name nested deeper does not.
+        RatchetViolation violation = Assert.Single(violations);
+        Assert.Equal("Core/Game.Tests/NestedSameName.cs", violation.RelativePath);
+    }
+
+    [Fact]
     public void MalformedBaseline_Throws()
     {
         WriteSource("A.cs", 10);
