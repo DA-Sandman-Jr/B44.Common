@@ -52,6 +52,7 @@
       <OrganizationGuidancePath ParameterType="System.String" Required="true" />
       <GameGuidancePath ParameterType="System.String" Required="true" />
       <ToolingGuidancePath ParameterType="System.String" Required="true" />
+      <ExcludedPaths ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="false" />
       <VerifyOnly ParameterType="System.Boolean" Required="true" />
     </ParameterGroup>
     <Task>
@@ -62,8 +63,29 @@
         const string gameStart = "<!-- B44 GAME GUIDANCE: START -->";
         const string gameEnd = "<!-- B44 GAME GUIDANCE: END -->";
 
-        var root = System.IO.Path.GetFullPath(RepositoryRoot)
-            .TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+        var pathComparison = System.IO.Path.DirectorySeparatorChar == '\\'
+            ? System.StringComparison.OrdinalIgnoreCase
+            : System.StringComparison.Ordinal;
+
+        string NormalizeDirectoryPath(string path)
+        {
+            var fullPath = System.IO.Path.GetFullPath(path);
+            var pathRoot = System.IO.Path.GetPathRoot(fullPath);
+            return string.Equals(fullPath, pathRoot, pathComparison)
+                ? fullPath
+                : fullPath.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+        }
+
+        bool IsAtOrBelow(string candidate, string ancestor)
+        {
+            if (string.Equals(candidate, ancestor, pathComparison)) return true;
+            if (candidate.Length <= ancestor.Length || !candidate.StartsWith(ancestor, pathComparison)) return false;
+            var boundary = candidate[ancestor.Length];
+            return boundary == System.IO.Path.DirectorySeparatorChar ||
+                boundary == System.IO.Path.AltDirectorySeparatorChar;
+        }
+
+        var root = NormalizeDirectoryPath(RepositoryRoot);
         var profile = (GuidanceProfile ?? string.Empty).Trim();
         var includeGame = string.Equals(profile, "Game", System.StringComparison.OrdinalIgnoreCase);
         if (!includeGame && !string.Equals(profile, "Organization", System.StringComparison.OrdinalIgnoreCase))
@@ -217,6 +239,45 @@
 
         try
         {
+            var excludedDirectoryNames = new System.Collections.Generic.HashSet<string>(
+                new[]
+                {
+                    ".git", ".godot", ".vs", ".b44", ".venv",
+                    "bin", "obj", "TestResults", "node_modules", "artifacts",
+                    "dist", "coverage", "publish"
+                },
+                System.StringComparer.OrdinalIgnoreCase);
+            var excludedRoots = new System.Collections.Generic.List<string>();
+            foreach (var item in ExcludedPaths ?? System.Array.Empty<Microsoft.Build.Framework.ITaskItem>())
+            {
+                var configuredPath = (item.ItemSpec ?? string.Empty).Trim();
+                if (configuredPath.Length == 0) continue;
+
+                var excludedRoot = NormalizeDirectoryPath(
+                    System.IO.Path.IsPathRooted(configuredPath)
+                        ? configuredPath
+                        : System.IO.Path.Combine(root, configuredPath));
+                if (string.Equals(excludedRoot, root, pathComparison))
+                {
+                    Log.LogError("B44AgentSyncExclude cannot exclude the repository root: " + configuredPath);
+                    return false;
+                }
+                if (!IsAtOrBelow(excludedRoot, root))
+                {
+                    Log.LogError("B44AgentSyncExclude must stay inside B44AgentRepositoryRoot. Received: " + configuredPath);
+                    return false;
+                }
+                if (System.IO.File.Exists(excludedRoot))
+                {
+                    Log.LogError("B44AgentSyncExclude accepts directories, not files: " + configuredPath);
+                    return false;
+                }
+                if (!excludedRoots.Exists(existing => string.Equals(existing, excludedRoot, pathComparison)))
+                {
+                    excludedRoots.Add(excludedRoot);
+                }
+            }
+
             var rootClaude = System.IO.Path.Combine(root, "CLAUDE.md");
             if (!System.IO.File.Exists(rootClaude))
             {
@@ -243,9 +304,6 @@
             var toolingDestination = System.IO.Path.Combine(root, ".b44", "B44.Tooling.md");
             success = WriteOrVerify(toolingDestination, toolingBody, false, "Generated B44 tooling guidance") && success;
 
-            var excludedDirectoryNames = new System.Collections.Generic.HashSet<string>(
-                new[] { ".git", ".godot", ".vs", "bin", "obj", "TestResults", ".b44" },
-                System.StringComparer.OrdinalIgnoreCase);
             var claudeFiles = new System.Collections.Generic.List<string>();
             var agentsFiles = new System.Collections.Generic.List<string>();
             var pending = new System.Collections.Generic.Stack<string>();
@@ -258,7 +316,13 @@
                 foreach (var child in System.IO.Directory.GetDirectories(directory))
                 {
                     var name = System.IO.Path.GetFileName(child);
-                    if (!excludedDirectoryNames.Contains(name)) pending.Push(child);
+                    var normalizedChild = NormalizeDirectoryPath(child);
+                    var isReparsePoint = (System.IO.File.GetAttributes(child) & System.IO.FileAttributes.ReparsePoint) != 0;
+                    var isConfiguredExclude = excludedRoots.Exists(excluded => IsAtOrBelow(normalizedChild, excluded));
+                    if (!excludedDirectoryNames.Contains(name) && !isConfiguredExclude && !isReparsePoint)
+                    {
+                        pending.Push(child);
+                    }
                 }
             }
             claudeFiles.Sort(System.StringComparer.OrdinalIgnoreCase);
@@ -347,6 +411,7 @@
       OrganizationGuidancePath="$(MSBuildThisFileDirectory)..\guidance\B44.Organization.md"
       GameGuidancePath="$(MSBuildThisFileDirectory)..\guidance\B44.Game.md"
       ToolingGuidancePath="$(MSBuildThisFileDirectory)..\guidance\B44.Tooling.md"
+      ExcludedPaths="@(B44AgentSyncExclude)"
       VerifyOnly="$(B44AgentSyncVerifyOnly)" />
   </Target>
 </Project>

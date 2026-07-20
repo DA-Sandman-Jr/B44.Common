@@ -38,6 +38,12 @@
   <!-- For test projects, allow SDK to generate TargetFrameworkAttribute and AssemblyInfo to ensure
        test adapters discover the framework and tests correctly. -->
 
+  <!-- Optional repository-relative subtrees that contain generated or imported
+       content and must not participate in CLAUDE.md/AGENTS.md synchronization. -->
+  <ItemGroup>
+    <!-- <B44AgentSyncExclude Include="REPLACE_WITH_EXCLUDED_DIRECTORY" /> -->
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="B44.Standards"
                       Version="REPLACE_WITH_B44_STANDARDS_VERSION"

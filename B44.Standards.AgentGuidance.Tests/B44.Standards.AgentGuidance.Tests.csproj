@@ -14,8 +14,13 @@
     <B44EngineFreeCore>true</B44EngineFreeCore>
   </PropertyGroup>
 
+  <ItemGroup>
+    <B44AgentSyncExclude Include="GeneratedSite" />
+  </ItemGroup>
+
   <Target Name="PrepareAgentGuidanceFixture" BeforeTargets="B44SyncAgentGuidance">
-    <MakeDir Directories="$(B44AgentRepositoryRoot);$(B44AgentRepositoryRoot)Nested" />
+    <MakeDir Directories="$(B44AgentRepositoryRoot);$(B44AgentRepositoryRoot)Nested;$(B44AgentRepositoryRoot)node_modules\Dependency;$(B44AgentRepositoryRoot)artifacts\Orphan;$(B44AgentRepositoryRoot)GeneratedSite\Nested;$(B44AgentRepositoryRoot)GeneratedSite\Orphan" />
+    <Delete Files="$(B44AgentRepositoryRoot)node_modules\Dependency\AGENTS.md;$(B44AgentRepositoryRoot)GeneratedSite\Nested\AGENTS.md" />
     <WriteLinesToFile File="$(B44AgentRepositoryRoot)CLAUDE.md"
                       Lines="# Fixture Game&#xA;&#xA;Root-local fixture guidance."
                       Overwrite="true"
@@ -24,6 +29,18 @@
                       Lines="# Nested Fixture&#xA;&#xA;Read the root `CLAUDE.md` first."
                       Overwrite="true"
                       Condition="!Exists('$(B44AgentRepositoryRoot)Nested\CLAUDE.md')" />
+    <WriteLinesToFile File="$(B44AgentRepositoryRoot)node_modules\Dependency\CLAUDE.md"
+                      Lines="# Dependency guidance that must be ignored"
+                      Overwrite="true" />
+    <WriteLinesToFile File="$(B44AgentRepositoryRoot)artifacts\Orphan\AGENTS.md"
+                      Lines="# Generated orphan that must be ignored"
+                      Overwrite="true" />
+    <WriteLinesToFile File="$(B44AgentRepositoryRoot)GeneratedSite\Nested\CLAUDE.md"
+                      Lines="# Repository-specific generated guidance that must be ignored"
+                      Overwrite="true" />
+    <WriteLinesToFile File="$(B44AgentRepositoryRoot)GeneratedSite\Orphan\AGENTS.md"
+                      Lines="# Repository-specific orphan that must be ignored"
+                      Overwrite="true" />
   </Target>
 
   <Target Name="VerifyAgentGuidanceFixture" AfterTargets="B44SyncAgentGuidance">
@@ -33,6 +50,10 @@
            Text="Recursive synchronization did not generate the nested AGENTS.md." />
     <Error Condition="!Exists('$(B44AgentRepositoryRoot).b44\B44.Tooling.md')"
            Text="The tooling guidance file was not materialized." />
+    <Error Condition="Exists('$(B44AgentRepositoryRoot)node_modules\Dependency\AGENTS.md')"
+           Text="Recursive synchronization entered a default-excluded node_modules subtree." />
+    <Error Condition="Exists('$(B44AgentRepositoryRoot)GeneratedSite\Nested\AGENTS.md')"
+           Text="Recursive synchronization entered a B44AgentSyncExclude subtree." />
 
     <ReadLinesFromFile File="$(B44AgentRepositoryRoot)CLAUDE.md">
       <Output TaskParameter="Lines" ItemName="_FixtureClaudeLines" />

@@ -41,4 +41,17 @@ repository-relative.
 Local builds update managed files, while
 `-p:B44AgentSyncVerifyOnly=true` validates them without writing.
 
+Synchronization does not traverse common dependency, build-output, coverage,
+publish, IDE, or virtual-environment directories, and it never follows directory
+reparse points. Repositories can add their own generated or imported subtrees;
+paths are interpreted relative to `B44AgentRepositoryRoot` and must remain
+inside it:
+
+```xml
+<ItemGroup>
+  <B44AgentSyncExclude Include="generated-site" />
+  <B44AgentSyncExclude Include="vendor/imported-project" />
+</ItemGroup>
+```
+
 Unlicensed (all rights reserved).
