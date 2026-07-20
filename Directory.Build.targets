@@ -1,0 +1,6 @@
+<Project>
+  <!-- B44.Common cannot consume the B44.Standards package while building the
+       package itself, so it imports the exact source target that consumers
+       receive through buildTransitive. -->
+  <Import Project="$(MSBuildThisFileDirectory)B44.Standards/buildTransitive/B44.Standards.targets" />
+</Project>

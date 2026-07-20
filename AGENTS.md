@@ -1,10 +1,12 @@
+> **Auto-generated from `CLAUDE.md`** — edit the sibling `CLAUDE.md` instead. Direct changes are overwritten by B44.Standards on the next synchronized build.
+
 # B44.Common — Shared Engine-Free Primitives
 
 <!-- B44 ORGANIZATION GUIDANCE: START -->
 ## B44 Organization Guidance
 
-- `AGENTS.md` files are auto-generated from sibling `CLAUDE.md` by the opt-in `B44.Standards` build target. Edit the `CLAUDE.md`, not the `AGENTS.md`.
-- Before editing or reviewing a file, read and follow every applicable `CLAUDE.md` from the repository root through that file's directory. Nearer instructions override broader instructions.
+- `AGENTS.md` files are auto-generated on build; see the generated header for the source file to edit.
+- Before editing or reviewing a file, read and follow every applicable `AGENTS.md` from the repository root through that file's directory. Nearer instructions override broader instructions.
 - Analyzer severities live in the `B44.Standards` packaged globalconfig, never in a repository `.editorconfig`. Repository editorconfigs own style and whitespace only; tune analyzer policy upstream in the package.
 - Fix shared behavior in the B44 package that owns it, then deliberately update the consuming package version. Do not fork or paste a local copy into a consumer repository.
 - Treat roughly 350 physical lines as a review warning for production source files. New production files should normally stay at or below 500 lines; files above 650 lines require a clear cohesion-based reason.

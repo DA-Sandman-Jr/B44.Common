@@ -11,8 +11,6 @@ name: reusable-dotnet-ci
 #       with:
 #         core-project: MyGame.Core/MyGame.Core.csproj
 #         test-project: MyGame.Tests/MyGame.Tests.csproj
-#       secrets:
-#         b44-packages-pat: ${{ secrets.B44_PACKAGES_PAT }}
 
 on:
   workflow_call:
@@ -33,7 +31,7 @@ on:
         default: '10.0.x'
     secrets:
       b44-packages-pat:
-        description: PAT with read:packages for the B44 GitHub Packages feed (only needed once the repo consumes B44.* packages)
+        description: Deprecated compatibility input; B44 packages now restore from nuget.org and this value is ignored
         required: false
 
 jobs:
@@ -47,18 +45,6 @@ jobs:
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
 
-      - name: Add B44 package source
-        env:
-          B44_PACKAGES_PAT: ${{ secrets.b44-packages-pat }}
-        run: |
-          if [ -n "$B44_PACKAGES_PAT" ]; then
-            dotnet nuget add source https://nuget.pkg.github.com/DA-Sandman-Jr/index.json \
-              --name b44 --username DA-Sandman-Jr --password "$B44_PACKAGES_PAT" \
-              --store-password-in-clear-text
-          else
-            echo "b44-packages-pat not provided; skipping B44 package source."
-          fi
-
       - name: Verify formatting
         run: |
           set -euo pipefail
@@ -71,14 +57,14 @@ jobs:
 
       - name: Build Core (no-Godot invariant)
         if: inputs.core-project != ''
-        run: dotnet build ${{ inputs.core-project }} -c Debug
+        run: dotnet build ${{ inputs.core-project }} -c Debug -p:B44AgentSyncVerifyOnly=true
 
       - name: Build solution
         if: inputs.core-project == ''
-        run: dotnet build -c Debug
+        run: dotnet build -c Debug -p:B44AgentSyncVerifyOnly=true
 
       - name: Build test project
-        run: dotnet build ${{ inputs.test-project }} -c Debug
+        run: dotnet build ${{ inputs.test-project }} -c Debug -p:B44AgentSyncVerifyOnly=true
 
       - name: Run tests
         run: dotnet test ${{ inputs.test-project }} -c Debug --no-build

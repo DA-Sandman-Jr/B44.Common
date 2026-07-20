@@ -1,10 +1,11 @@
 # B44.Common
 
-Engine-free shared primitives for B44 games, published as a private NuGet
-package on GitHub Packages, plus the canonical B44-wide standards under
-[`/templates`](templates/README.md).
+Engine-free shared primitives and studio policy for B44 repositories, published
+as the `B44.Common` and `B44.Standards` packages on nuget.org. Bootstrap
+examples remain under [`/templates`](templates/README.md); ongoing build and
+agent policy ships through `B44.Standards`.
 
-## What's in the package (v0.1)
+## What's in B44.Common
 
 | Namespace | Types | Origin |
 |---|---|---|
@@ -24,15 +25,18 @@ at `AnalysisMode=Recommended`, a curated Meziantou allowlist + banned-API rules
 for projects that set `<B44EngineFreeCore>true</B44EngineFreeCore>` — the
 banned-symbols list (no Godot APIs, no ambient time/randomness) plus an MSBuild
 guard that fails the build if a Godot assembly appears in the resolved
-reference graph. Consume with:
+reference graph. Its opt-in agent target also maintains canonical organization
+and game guidance in root `CLAUDE.md` files and recursively generates sibling
+`AGENTS.md` mirrors. Consume with:
 
 ```xml
 <PackageReference Include="B44.Standards" Version="x.y.z" PrivateAssets="all" />
 ```
 
-This repo dogfoods the same files via `Directory.Build.props`. CI for game
-repos: call `.github/workflows/reusable-dotnet-ci.yml` (workflow_call; repo
-Actions access is set to same-owner).
+This repo dogfoods the same files through its root `Directory.Build.props` and
+`Directory.Build.targets`. CI for game repos calls
+`.github/workflows/reusable-dotnet-ci.yml` (`workflow_call`; repository Actions
+access is set to same-owner).
 
 Deliberately NOT here: `*ActionResult` shapes, content catalogs, game rules or
 tuning, anything Godot-side. Sources and PDB are embedded in the assembly.
@@ -51,21 +55,14 @@ single-consumer): `NumberFormatter` (lives in the one game that uses it) and `Sa
 
 ## Consuming (game repos)
 
-1. Copy `templates/nuget.config` to the repo root.
-2. **Local dev (once per machine):** create a classic PAT with `read:packages`, then
-   ```bash
-   dotnet nuget update source b44 --username DA-Sandman-Jr \
-     --password YOUR_PAT --store-password-in-clear-text
-   ```
-   (writes to the user-level NuGet config, never the repo).
-3. **CI:** add the PAT as the `B44_PACKAGES_PAT` repo secret; the templated
-   `build-test.yml` registers the source before restore. Another repo's
-   `GITHUB_TOKEN` cannot read a user-owned private package — this secret is
-   required.
-4. Reference it:
+1. Reference the required package versions directly from nuget.org:
    ```xml
-   <PackageReference Include="B44.Common" Version="0.1.0" />
+   <PackageReference Include="B44.Common" Version="x.y.z" />
+   <PackageReference Include="B44.Standards" Version="x.y.z" PrivateAssets="all" />
    ```
+2. Opt into synchronized agent guidance from the repository's
+   `Directory.Build.props` if it is a B44-owned repository; see
+   [`B44.Standards/README.md`](B44.Standards/README.md).
 
 ### Iterating on the package from a game repo
 
@@ -81,6 +78,5 @@ licensed for reuse.
 ## Publishing
 
 Push a version tag: `git tag v0.2.0 && git push origin v0.2.0`. The publish
-workflow tests, packs with that version, and pushes to the
-`DA-Sandman-Jr` GitHub Packages NuGet feed using the repo's own
-`GITHUB_TOKEN`.
+workflow tests and packs both packages, then publishes them to nuget.org via
+Trusted Publishing (OIDC; no long-lived API key).

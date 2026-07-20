@@ -32,6 +32,9 @@ jobs:
       - name: Restore
         run: dotnet restore B44.Common.sln
 
+      - name: Verify synchronized guidance
+        run: dotnet build B44.Common/B44.Common.csproj --configuration Release --no-restore -p:B44AgentSyncVerifyOnly=true -p:Version=$VERSION
+
       - name: Build
         run: dotnet build B44.Common.sln --configuration Release --no-restore -p:Version=$VERSION
 

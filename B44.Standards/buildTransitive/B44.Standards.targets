@@ -31,4 +31,322 @@
     <Error Condition="'@(B44GodotReference)' != ''"
            Text="$(MSBuildProjectName) is an engine-free Core project but resolves a Godot reference (%(B44GodotReference.FileName)). Remove the Godot dependency; Core must build and test without the engine. Godot-facing code belongs in the presentation project." />
   </Target>
+
+  <!-- Agent guidance is deliberately opt-in. B44.Standards can therefore be
+       used outside David's repositories without rewriting a consumer's
+       source tree. Set the four B44Agent* properties in Directory.Build.props
+       to enable it for one explicitly selected anchor project. -->
+  <PropertyGroup>
+    <B44AgentSyncVerifyOnly Condition="'$(B44AgentSyncVerifyOnly)' == ''">false</B44AgentSyncVerifyOnly>
+    <B44AgentSyncProjectFullPath Condition="'$(B44AgentSyncProject)' != ''">$([MSBuild]::NormalizePath('$(B44AgentSyncProject)'))</B44AgentSyncProjectFullPath>
+    <B44GameCoreProjectFullPath Condition="'$(B44GameCoreProject)' != ''">$([MSBuild]::NormalizePath('$(B44GameCoreProject)'))</B44GameCoreProjectFullPath>
+  </PropertyGroup>
+
+  <UsingTask
+    TaskName="B44SyncAgentGuidanceTask"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <RepositoryRoot ParameterType="System.String" Required="true" />
+      <GuidanceProfile ParameterType="System.String" Required="true" />
+      <OrganizationGuidancePath ParameterType="System.String" Required="true" />
+      <GameGuidancePath ParameterType="System.String" Required="true" />
+      <ToolingGuidancePath ParameterType="System.String" Required="true" />
+      <VerifyOnly ParameterType="System.Boolean" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        const string organizationStart = "<!-- B44 ORGANIZATION GUIDANCE: START -->";
+        const string organizationEnd = "<!-- B44 ORGANIZATION GUIDANCE: END -->";
+        const string gameStart = "<!-- B44 GAME GUIDANCE: START -->";
+        const string gameEnd = "<!-- B44 GAME GUIDANCE: END -->";
+
+        var root = System.IO.Path.GetFullPath(RepositoryRoot)
+            .TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+        var profile = (GuidanceProfile ?? string.Empty).Trim();
+        var includeGame = string.Equals(profile, "Game", System.StringComparison.OrdinalIgnoreCase);
+        if (!includeGame && !string.Equals(profile, "Organization", System.StringComparison.OrdinalIgnoreCase))
+        {
+            Log.LogError("B44AgentGuidanceProfile must be Organization or Game when B44AgentSyncEnabled=true; received '" + profile + "'.");
+            return false;
+        }
+
+        if (!System.IO.Directory.Exists(root))
+        {
+            Log.LogError("B44AgentRepositoryRoot does not exist: " + root);
+            return false;
+        }
+
+        string ReadUtf8(string path, out bool hasBom)
+        {
+            var bytes = System.IO.File.ReadAllBytes(path);
+            hasBom = bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
+            if ((bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE) ||
+                (bytes.Length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF))
+            {
+                throw new System.IO.InvalidDataException("Agent guidance files must use UTF-8, not UTF-16: " + path);
+            }
+
+            var offset = hasBom ? 3 : 0;
+            return new System.Text.UTF8Encoding(false, true).GetString(bytes, offset, bytes.Length - offset);
+        }
+
+        void WriteUtf8(string path, string content, bool withBom)
+        {
+            var directory = System.IO.Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory)) System.IO.Directory.CreateDirectory(directory);
+            var payload = new System.Text.UTF8Encoding(false).GetBytes(content);
+            if (!withBom)
+            {
+                System.IO.File.WriteAllBytes(path, payload);
+                return;
+            }
+
+            var bytes = new byte[payload.Length + 3];
+            bytes[0] = 0xEF;
+            bytes[1] = 0xBB;
+            bytes[2] = 0xBF;
+            System.Buffer.BlockCopy(payload, 0, bytes, 3, payload.Length);
+            System.IO.File.WriteAllBytes(path, bytes);
+        }
+
+        string NewlineFor(string text)
+        {
+            return text.IndexOf("\r\n", System.StringComparison.Ordinal) >= 0 ? "\r\n" : "\n";
+        }
+
+        string NormalizeFragment(string text, string newline)
+        {
+            return text.Replace("\r\n", "\n").Replace("\r", "\n")
+                .TrimEnd('\n')
+                .Replace("\n", newline);
+        }
+
+        int Count(string text, string value)
+        {
+            var count = 0;
+            var index = 0;
+            while ((index = text.IndexOf(value, index, System.StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += value.Length;
+            }
+            return count;
+        }
+
+        string UpsertBlock(string document, string start, string end, string body, string newline, string afterMarker)
+        {
+            var startCount = Count(document, start);
+            var endCount = Count(document, end);
+            if (startCount != endCount || startCount > 1)
+            {
+                throw new System.IO.InvalidDataException(
+                    "Managed guidance markers are malformed or duplicated: " + start + " / " + end + ".");
+            }
+
+            var block = start + newline + body + newline + end;
+            if (startCount == 1)
+            {
+                var pattern = System.Text.RegularExpressions.Regex.Escape(start) + ".*?" +
+                    System.Text.RegularExpressions.Regex.Escape(end);
+                return System.Text.RegularExpressions.Regex.Replace(
+                    document,
+                    pattern,
+                    _ => block,
+                    System.Text.RegularExpressions.RegexOptions.Singleline);
+            }
+
+            if (!string.IsNullOrEmpty(afterMarker))
+            {
+                var markerIndex = document.IndexOf(afterMarker, System.StringComparison.Ordinal);
+                if (markerIndex < 0)
+                {
+                    throw new System.IO.InvalidDataException("Cannot place managed game guidance because the organization block is absent.");
+                }
+                var insertAt = markerIndex + afterMarker.Length;
+                return document.Insert(insertAt, newline + newline + block);
+            }
+
+            var firstLineBreak = document.IndexOf('\n');
+            var headingEnd = firstLineBreak < 0 ? document.Length : firstLineBreak + 1;
+            var before = document.Substring(0, headingEnd).TrimEnd('\r', '\n');
+            var after = document.Substring(headingEnd).TrimStart('\r', '\n');
+            return before + newline + newline + block + newline + newline + after;
+        }
+
+        string RemoveBlock(string document, string start, string end, string newline)
+        {
+            var startCount = Count(document, start);
+            var endCount = Count(document, end);
+            if (startCount != endCount || startCount > 1)
+            {
+                throw new System.IO.InvalidDataException(
+                    "Managed guidance markers are malformed or duplicated: " + start + " / " + end + ".");
+            }
+            if (startCount == 0) return document;
+
+            var pattern = "(?:\\r?\\n){0,2}" + System.Text.RegularExpressions.Regex.Escape(start) + ".*?" +
+                System.Text.RegularExpressions.Regex.Escape(end) + "(?:\\r?\\n){0,2}";
+            return System.Text.RegularExpressions.Regex.Replace(
+                document,
+                pattern,
+                _ => newline + newline,
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+        }
+
+        bool WriteOrVerify(string path, string expected, bool expectedBom, string description)
+        {
+            if (System.IO.File.Exists(path))
+            {
+                bool existingBom;
+                var existing = ReadUtf8(path, out existingBom);
+                if (existing == expected && existingBom == expectedBom) return true;
+            }
+
+            if (VerifyOnly)
+            {
+                Log.LogError(description + " is stale or missing: " + path);
+                return false;
+            }
+
+            WriteUtf8(path, expected, expectedBom);
+            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, "Synced " + path);
+            return true;
+        }
+
+        try
+        {
+            var rootClaude = System.IO.Path.Combine(root, "CLAUDE.md");
+            if (!System.IO.File.Exists(rootClaude))
+            {
+                Log.LogError("Agent guidance synchronization requires a root CLAUDE.md: " + rootClaude);
+                return false;
+            }
+
+            bool rootBom;
+            var rootText = ReadUtf8(rootClaude, out rootBom);
+            var newline = NewlineFor(rootText);
+
+            bool ignoredBom;
+            var organizationBody = NormalizeFragment(ReadUtf8(OrganizationGuidancePath, out ignoredBom), newline);
+            var gameBody = NormalizeFragment(ReadUtf8(GameGuidancePath, out ignoredBom), newline);
+            var toolingBody = NormalizeFragment(ReadUtf8(ToolingGuidancePath, out ignoredBom), newline) + newline;
+
+            var updatedRoot = UpsertBlock(
+                rootText, organizationStart, organizationEnd, organizationBody, newline, null);
+            updatedRoot = includeGame
+                ? UpsertBlock(updatedRoot, gameStart, gameEnd, gameBody, newline, organizationEnd)
+                : RemoveBlock(updatedRoot, gameStart, gameEnd, newline);
+
+            var success = WriteOrVerify(rootClaude, updatedRoot, rootBom, "Root CLAUDE.md managed guidance");
+            var toolingDestination = System.IO.Path.Combine(root, ".b44", "B44.Tooling.md");
+            success = WriteOrVerify(toolingDestination, toolingBody, false, "Generated B44 tooling guidance") && success;
+
+            var excludedDirectoryNames = new System.Collections.Generic.HashSet<string>(
+                new[] { ".git", ".godot", ".vs", "bin", "obj", "TestResults", ".b44" },
+                System.StringComparer.OrdinalIgnoreCase);
+            var claudeFiles = new System.Collections.Generic.List<string>();
+            var agentsFiles = new System.Collections.Generic.List<string>();
+            var pending = new System.Collections.Generic.Stack<string>();
+            pending.Push(root);
+            while (pending.Count > 0)
+            {
+                var directory = pending.Pop();
+                claudeFiles.AddRange(System.IO.Directory.GetFiles(directory, "CLAUDE.md", System.IO.SearchOption.TopDirectoryOnly));
+                agentsFiles.AddRange(System.IO.Directory.GetFiles(directory, "AGENTS.md", System.IO.SearchOption.TopDirectoryOnly));
+                foreach (var child in System.IO.Directory.GetDirectories(directory))
+                {
+                    var name = System.IO.Path.GetFileName(child);
+                    if (!excludedDirectoryNames.Contains(name)) pending.Push(child);
+                }
+            }
+            claudeFiles.Sort(System.StringComparer.OrdinalIgnoreCase);
+
+            var claudeSet = new System.Collections.Generic.HashSet<string>(claudeFiles, System.StringComparer.OrdinalIgnoreCase);
+            foreach (var orphan in agentsFiles)
+            {
+                var siblingClaude = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(orphan), "CLAUDE.md");
+                if (!claudeSet.Contains(siblingClaude))
+                {
+                    Log.LogError("AGENTS.md has no sibling CLAUDE.md source: " + orphan);
+                    success = false;
+                }
+            }
+
+            const string generatedHeader = "> **Auto-generated from `CLAUDE.md`** — edit the sibling `CLAUDE.md` instead. Direct changes are overwritten by B44.Standards on the next synchronized build.";
+            foreach (var source in claudeFiles)
+            {
+                bool sourceBom;
+                string sourceText;
+                if (string.Equals(source, rootClaude, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    sourceText = updatedRoot;
+                    sourceBom = rootBom;
+                }
+                else
+                {
+                    sourceText = ReadUtf8(source, out sourceBom);
+                }
+                var sourceNewline = NewlineFor(sourceText);
+                var agentsText = System.Text.RegularExpressions.Regex.Replace(
+                    sourceText,
+                    @"`AGENTS\.md` files are auto-generated from sibling `CLAUDE\.md` by the opt-in `B44\.Standards` build target\. Edit the `CLAUDE\.md`, not the `AGENTS\.md`\.",
+                    "`AGENTS.md` files are auto-generated on build; see the generated header for the source file to edit.",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                agentsText = System.Text.RegularExpressions.Regex.Replace(
+                    agentsText,
+                    @"`AGENTS\.md` files are auto-generated from sibling `CLAUDE\.md` on build via `Directory\.Build\.targets`\. Edit the `CLAUDE\.md`, not the `AGENTS\.md`\.",
+                    "`AGENTS.md` files are auto-generated on build; see the generated header for the source file to edit.",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                agentsText = System.Text.RegularExpressions.Regex.Replace(
+                    agentsText,
+                    "CLAUDE\\.md",
+                    "AGENTS.md",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                var expectedAgents = generatedHeader + sourceNewline + sourceNewline + agentsText;
+                var destination = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(source), "AGENTS.md");
+                success = WriteOrVerify(destination, expectedAgents, sourceBom, "Generated AGENTS.md") && success;
+            }
+
+            if (!success && !Log.HasLoggedErrors)
+            {
+                Log.LogError("B44 agent guidance synchronization did not complete successfully.");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Log.LogErrorFromException(ex, true);
+            return false;
+        }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="B44SyncAgentGuidance"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(B44AgentSyncEnabled)' == 'true' and '$(B44AgentSyncProjectFullPath)' == '$(MSBuildProjectFullPath)'">
+    <Error Condition="'$(B44AgentRepositoryRoot)' == ''"
+           Text="B44AgentSyncEnabled requires B44AgentRepositoryRoot. Set it to $(MSBuildThisFileDirectory) from the repository's Directory.Build.props." />
+    <Error Condition="'$(B44AgentGuidanceProfile)' == ''"
+           Text="B44AgentSyncEnabled requires B44AgentGuidanceProfile=Organization or Game." />
+    <Error Condition="'$(B44AgentGuidanceProfile)' == 'Game' and '$(B44GameCoreProject)' == ''"
+           Text="The B44 Game guidance profile requires B44GameCoreProject to identify the mandatory engine-free Core project." />
+    <Error Condition="'$(B44AgentGuidanceProfile)' == 'Game' and '$(B44GameCoreProject)' != '' and !Exists('$(B44GameCoreProject)')"
+           Text="The B44 Game guidance profile requires an existing engine-free Core project. B44GameCoreProject was '$(B44GameCoreProject)'." />
+    <Error Condition="'$(B44AgentGuidanceProfile)' == 'Game' and '$(B44AgentSyncProjectFullPath)' != '$(B44GameCoreProjectFullPath)'"
+           Text="The B44 Game guidance profile requires its engine-free Core project to be the synchronization anchor. Set B44AgentSyncProject=$(B44GameCoreProject)." />
+    <Error Condition="'$(B44AgentGuidanceProfile)' == 'Game' and '$(B44EngineFreeCore)' != 'true'"
+           Text="The B44 Game guidance profile requires the anchor Core project to set B44EngineFreeCore=true." />
+    <Message Text="Synchronizing B44 $(B44AgentGuidanceProfile) guidance and CLAUDE.md/AGENTS.md mirrors."
+             Importance="High" />
+    <B44SyncAgentGuidanceTask
+      RepositoryRoot="$(B44AgentRepositoryRoot)"
+      GuidanceProfile="$(B44AgentGuidanceProfile)"
+      OrganizationGuidancePath="$(MSBuildThisFileDirectory)..\guidance\B44.Organization.md"
+      GameGuidancePath="$(MSBuildThisFileDirectory)..\guidance\B44.Game.md"
+      ToolingGuidancePath="$(MSBuildThisFileDirectory)..\guidance\B44.Tooling.md"
+      VerifyOnly="$(B44AgentSyncVerifyOnly)" />
+  </Target>
 </Project>

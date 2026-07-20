@@ -10,8 +10,8 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>B44.Common</RootNamespace>
     <!-- Embed sources and the PDB in the assembly so consuming repos (and the
-         agents working in them) can read and step into package code without a
-         separate symbols feed. GitHub Packages does not host snupkg. -->
+         agents working in them) can read and step into package code from the
+         primary package without coordinating a separate symbols artifact. -->
     <DebugType>embedded</DebugType>
     <EmbedAllSources>true</EmbedAllSources>
     <!-- Engine-free invariant, enforced by B44.Standards (banned symbols +

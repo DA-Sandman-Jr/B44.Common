@@ -20,11 +20,14 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Build package
-        run: dotnet build B44.Common/B44.Common.csproj -c Debug
+      - name: Restore
+        run: dotnet restore B44.Common.sln
 
-      - name: Build test project
-        run: dotnet build B44.Common.Tests/B44.Common.Tests.csproj -c Debug
+      - name: Verify synchronized guidance
+        run: dotnet build B44.Common/B44.Common.csproj -c Debug --no-restore -p:B44AgentSyncVerifyOnly=true
+
+      - name: Build solution
+        run: dotnet build B44.Common.sln -c Debug --no-restore
 
       - name: Run tests
-        run: dotnet test B44.Common.Tests/B44.Common.Tests.csproj -c Debug --no-build
+        run: dotnet test B44.Common.sln -c Debug --no-build

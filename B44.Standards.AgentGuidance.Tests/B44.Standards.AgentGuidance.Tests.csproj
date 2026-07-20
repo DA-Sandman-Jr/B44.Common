@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+
+    <!-- This build-only integration fixture exercises the exact source target
+         packed by B44.Standards. Its generated repository lives under obj/. -->
+    <B44AgentSyncEnabled>true</B44AgentSyncEnabled>
+    <B44AgentGuidanceProfile>Game</B44AgentGuidanceProfile>
+    <B44AgentRepositoryRoot>$(MSBuildProjectDirectory)\obj\AgentGuidanceFixture\</B44AgentRepositoryRoot>
+    <B44AgentSyncProject>$(MSBuildProjectFullPath)</B44AgentSyncProject>
+    <B44GameCoreProject>$(MSBuildProjectFullPath)</B44GameCoreProject>
+    <B44EngineFreeCore>true</B44EngineFreeCore>
+  </PropertyGroup>
+
+  <Target Name="PrepareAgentGuidanceFixture" BeforeTargets="B44SyncAgentGuidance">
+    <MakeDir Directories="$(B44AgentRepositoryRoot);$(B44AgentRepositoryRoot)Nested" />
+    <WriteLinesToFile File="$(B44AgentRepositoryRoot)CLAUDE.md"
+                      Lines="# Fixture Game&#xA;&#xA;Root-local fixture guidance."
+                      Overwrite="true"
+                      Condition="!Exists('$(B44AgentRepositoryRoot)CLAUDE.md')" />
+    <WriteLinesToFile File="$(B44AgentRepositoryRoot)Nested\CLAUDE.md"
+                      Lines="# Nested Fixture&#xA;&#xA;Read the root `CLAUDE.md` first."
+                      Overwrite="true"
+                      Condition="!Exists('$(B44AgentRepositoryRoot)Nested\CLAUDE.md')" />
+  </Target>
+
+  <Target Name="VerifyAgentGuidanceFixture" AfterTargets="B44SyncAgentGuidance">
+    <Error Condition="!Exists('$(B44AgentRepositoryRoot)AGENTS.md')"
+           Text="The Game profile did not generate a root AGENTS.md." />
+    <Error Condition="!Exists('$(B44AgentRepositoryRoot)Nested\AGENTS.md')"
+           Text="Recursive synchronization did not generate the nested AGENTS.md." />
+    <Error Condition="!Exists('$(B44AgentRepositoryRoot).b44\B44.Tooling.md')"
+           Text="The tooling guidance file was not materialized." />
+
+    <ReadLinesFromFile File="$(B44AgentRepositoryRoot)CLAUDE.md">
+      <Output TaskParameter="Lines" ItemName="_FixtureClaudeLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(B44AgentRepositoryRoot)AGENTS.md">
+      <Output TaskParameter="Lines" ItemName="_FixtureAgentsLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(B44AgentRepositoryRoot)Nested\AGENTS.md">
+      <Output TaskParameter="Lines" ItemName="_FixtureNestedAgentsLines" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <_FixtureClaudeText>@(_FixtureClaudeLines, '|')</_FixtureClaudeText>
+      <_FixtureAgentsText>@(_FixtureAgentsLines, '|')</_FixtureAgentsText>
+      <_FixtureNestedAgentsText>@(_FixtureNestedAgentsLines, '|')</_FixtureNestedAgentsText>
+    </PropertyGroup>
+
+    <Error Condition="$([System.String]::Copy('$(_FixtureClaudeText)').Contains('B44 ORGANIZATION GUIDANCE: START')) != 'True'"
+           Text="The organization managed block was not inserted." />
+    <Error Condition="$([System.String]::Copy('$(_FixtureClaudeText)').Contains('B44 GAME GUIDANCE: START')) != 'True'"
+           Text="The Game managed block was not inserted." />
+    <Error Condition="$([System.String]::Copy('$(_FixtureClaudeText)').Contains('Root-local fixture guidance.')) != 'True'"
+           Text="Synchronization did not preserve repository-local root guidance." />
+    <Error Condition="$([System.String]::Copy('$(_FixtureAgentsText)').Contains('Auto-generated from `CLAUDE.md`')) != 'True'"
+           Text="The generated root mirror is missing its source header." />
+    <Error Condition="$([System.String]::Copy('$(_FixtureNestedAgentsText)').Contains('Read the root `AGENTS.md` first.')) != 'True'"
+           Text="Nested mirroring did not adapt the instruction filename." />
+  </Target>
+</Project>
