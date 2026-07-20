@@ -41,11 +41,13 @@ repository-relative.
 Local builds update managed files, while
 `-p:B44AgentSyncVerifyOnly=true` validates them without writing.
 
-Active, unreleased repositories may reference `B44.Standards` with a bounded
-patch float such as `0.4.*`. Released or production repositories pin an exact
-Standards version, and all `B44.Common` runtime references stay exact. Changes
-that expand enforcement or otherwise require coordinated adoption bump the
-Standards minor version rather than entering an existing patch float.
+All B44 repositories, including released and production consumers, reference
+internal packages through a compatibility-bounded float. Pre-1.0 packages use
+`0.<minor>.*` (for example, `B44.Standards` and `B44.Common` currently use
+`0.4.*`); stable packages use `<major>.*`. Breaking changes bump the excluded
+minor or major boundary and require a deliberate consumer edit. Never use an
+unbounded `*`. Changes that expand Standards enforcement bump the Standards
+minor version rather than entering an existing patch float.
 
 Synchronization does not traverse common dependency, build-output, coverage,
 publish, IDE, or virtual-environment directories, and it never follows directory

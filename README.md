@@ -30,7 +30,7 @@ and game guidance in root `CLAUDE.md` files and recursively generates sibling
 `AGENTS.md` mirrors. Consume with:
 
 ```xml
-<PackageReference Include="B44.Standards" Version="x.y.z" PrivateAssets="all" />
+<PackageReference Include="B44.Standards" Version="0.4.*" PrivateAssets="all" />
 ```
 
 This repo dogfoods the same files through its root `Directory.Build.props` and
@@ -57,8 +57,8 @@ single-consumer): `NumberFormatter` (lives in the one game that uses it) and `Sa
 
 1. Reference the required package versions directly from nuget.org:
    ```xml
-   <PackageReference Include="B44.Common" Version="x.y.z" />
-   <PackageReference Include="B44.Standards" Version="x.y.z" PrivateAssets="all" />
+   <PackageReference Include="B44.Common" Version="0.4.*" />
+   <PackageReference Include="B44.Standards" Version="0.4.*" PrivateAssets="all" />
    ```
 2. Opt into synchronized agent guidance from the repository's
    `Directory.Build.props` if it is a B44-owned repository; see

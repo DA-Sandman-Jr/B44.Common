@@ -6,7 +6,7 @@ policy forks.
 
 | File | Goes to | Notes |
 |---|---|---|
-| `Directory.Build.props` | repo root | Select the `Game` guidance profile, repository-relative sync anchor, mandatory engine-free Core project, and pinned B44.Standards version |
+| `Directory.Build.props` | repo root | Select the `Game` guidance profile, repository-relative sync anchor, mandatory engine-free Core project, and compatibility-bounded B44.Standards version |
 | `format.yml` | `.github/workflows/` | dotnet-format gate |
 | `build-test.yml` | `.github/workflows/` | Build + test gate; replace `GAME` placeholders; B44 packages restore directly from nuget.org |
 | `nuget.config` | repo root | Optional deterministic nuget.org-only package source; no credentials |

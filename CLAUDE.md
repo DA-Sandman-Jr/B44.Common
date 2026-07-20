@@ -6,7 +6,8 @@
 - `AGENTS.md` files are auto-generated from sibling `CLAUDE.md` by the opt-in `B44.Standards` build target. Edit the `CLAUDE.md`, not the `AGENTS.md`.
 - Before editing or reviewing a file, read and follow every applicable `CLAUDE.md` from the repository root through that file's directory. Nearer instructions override broader instructions.
 - Analyzer severities live in the `B44.Standards` packaged globalconfig, never in a repository `.editorconfig`. Repository editorconfigs own style and whitespace only; tune analyzer policy upstream in the package.
-- Fix shared behavior in the B44 package that owns it; do not fork or paste a local copy into a consumer repository. Keep runtime `B44.Common` references exact. Active, unreleased repositories may use a bounded patch float for `B44.Standards` (for example, `0.4.*`); released or production repositories pin it exactly. Enforcement-expanding Standards changes bump the minor version and never enter an existing patch float.
+- Fix shared behavior in the B44 package that owns it; do not fork or paste a local copy into a consumer repository.
+- Use compatibility-bounded floating versions for internal B44 packages in every consumer, including production: pre-1.0 packages use `0.<minor>.*`, while stable packages use `<major>.*`. Package owners bump the excluded boundary for breaking changes, and consumers cross that boundary manually. Never use an unbounded `*`. Enforcement-expanding Standards changes bump the minor version and never enter an existing patch float.
 - Treat roughly 350 physical lines as a review warning for production source files. New production files should normally stay at or below 500 lines; files above 650 lines require a clear cohesion-based reason.
 - Existing oversized files must not grow unless the same change performs a real extraction and leaves the file smaller. Coordinators coordinate; do not evade the limit with cosmetic partial classes, one-method services, generic utility dumping grounds, or needless factories.
 - Before automated analyzer fixes, baseline measurement, scripted bulk text rewrites, or consuming a freshly published package, read `.b44/B44.Tooling.md`.
@@ -91,7 +92,7 @@ everything else unchanged. Rejected-with-evidence, revisit only on the flip:
    repo handles credentials/PII (note: BFA.Server + Azure Functions exist —
    evaluate at THEIR standards adoption, not before).
 4. **PublicApiAnalyzers on B44.Common** — churn pre-1.0. Flip: first 1.0
-   game ships against a pinned B44.Common.
+   game ships against B44.Common as a released compatibility surface.
 
 Adoption notes for the non-games: repos without a Core project (single-csproj
 apps, servers) take the analyzer layer only — no `B44EngineFreeCore`;
@@ -127,8 +128,8 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
 - Publish = push a `v*` tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`);
   `release.yml` tests and packs both packages, then publishes to nuget.org
   through Trusted Publishing (OIDC; no long-lived API key).
-- After publishing a breaking change, bump the `PackageReference` in each game
-  deliberately — games pin exact versions.
+- After publishing a breaking change, bump each consumer's compatibility
+  boundary deliberately. Compatible releases flow through bounded floats.
 
 ## Layout
 

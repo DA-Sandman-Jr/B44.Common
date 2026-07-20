@@ -45,10 +45,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Active unreleased repos may use a bounded patch float such as 0.4.*;
-         released/production repos pin an exact B44.Standards version. -->
+    <!-- Internal packages use compatibility-bounded floats in every consumer,
+         including production. B44.Standards is pre-1.0, so the minor version
+         is the breaking-change boundary. -->
     <PackageReference Include="B44.Standards"
-                      Version="REPLACE_WITH_B44_STANDARDS_VERSION"
+                      Version="0.4.*"
                       PrivateAssets="all" />
   </ItemGroup>
 </Project>
