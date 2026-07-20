@@ -41,6 +41,12 @@ repository-relative.
 Local builds update managed files, while
 `-p:B44AgentSyncVerifyOnly=true` validates them without writing.
 
+Active, unreleased repositories may reference `B44.Standards` with a bounded
+patch float such as `0.4.*`. Released or production repositories pin an exact
+Standards version, and all `B44.Common` runtime references stay exact. Changes
+that expand enforcement or otherwise require coordinated adoption bump the
+Standards minor version rather than entering an existing patch float.
+
 Synchronization does not traverse common dependency, build-output, coverage,
 publish, IDE, or virtual-environment directories, and it never follows directory
 reparse points. Repositories can add their own generated or imported subtrees;

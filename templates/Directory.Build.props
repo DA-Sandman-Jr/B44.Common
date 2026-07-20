@@ -45,6 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Active unreleased repos may use a bounded patch float such as 0.4.*;
+         released/production repos pin an exact B44.Standards version. -->
     <PackageReference Include="B44.Standards"
                       Version="REPLACE_WITH_B44_STANDARDS_VERSION"
                       PrivateAssets="all" />
