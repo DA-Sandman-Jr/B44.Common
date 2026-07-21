@@ -9,6 +9,9 @@
     <B44AgentSyncProject>$(MSBuildThisFileDirectory)B44.Common\B44.Common.csproj</B44AgentSyncProject>
 
     <Nullable>enable</Nullable>
+    <!-- Shared package and policy builds must never normalize a new warning
+         into the baseline. Consumer repositories opt into this independently. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Surface editorconfig style/naming violations at build time so CI and
          local `dotnet build` catch drift instead of waiting for `dotnet format`. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
