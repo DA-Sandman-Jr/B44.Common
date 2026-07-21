@@ -18,7 +18,8 @@ agent policy ships through `B44.Standards`.
 
 The sibling `B44.Standards` package carries the studio's enforcement stack and
 applies it to any referencing project via buildTransitive assets: SDK analyzers
-at `AnalysisMode=Recommended`, a curated Meziantou allowlist + banned-API rules
+at `AnalysisMode=Recommended`, an opt-in target-level-pinned full Security
+profile, a curated Meziantou allowlist + banned-API rules
 (severities in `config/B44.globalconfig`, with a `*.Tests` overlay),
 `CA1502`/`MA0051` complexity+length thresholds, NuGet audit on restore, and —
 for projects that set `<B44EngineFreeCore>true</B44EngineFreeCore>` — the
@@ -29,7 +30,7 @@ and game guidance in root `CLAUDE.md` files and recursively generates sibling
 `AGENTS.md` mirrors. Consume with:
 
 ```xml
-<PackageReference Include="B44.Standards" Version="0.5.*" PrivateAssets="all" />
+<PackageReference Include="B44.Standards" Version="0.6.*" PrivateAssets="all" />
 ```
 
 This repo dogfoods the same files through its root `Directory.Build.props` and
@@ -63,7 +64,7 @@ repository needs the exact same representation or behavior.
 1. Reference the required package versions directly from nuget.org:
    ```xml
    <PackageReference Include="B44.Common" Version="0.5.*" />
-   <PackageReference Include="B44.Standards" Version="0.5.*" PrivateAssets="all" />
+   <PackageReference Include="B44.Standards" Version="0.6.*" PrivateAssets="all" />
    ```
 2. Opt into synchronized agent guidance from the repository's
    `Directory.Build.props` if it is a B44-owned repository; see
@@ -82,6 +83,6 @@ licensed for reuse.
 
 ## Publishing
 
-Push a version tag: `git tag v0.5.0 && git push origin v0.5.0`. The publish
+Push a version tag: `git tag v0.6.0 && git push origin v0.6.0`. The publish
 workflow tests and packs both packages, then publishes them to nuget.org via
 Trusted Publishing (OIDC; no long-lived API key).

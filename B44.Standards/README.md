@@ -22,6 +22,10 @@ Opt-in flags:
 - `<B44EngineFreeCore>true</B44EngineFreeCore>` — additionally bans Godot APIs and
   fails the build if a Godot assembly reaches the resolved reference graph
   (implies determinism).
+- `<B44SecuritySensitive>true</B44SecuritySensitive>` — enables every built-in
+  SDK Security rule and pins the rule level to the project's target framework
+  (`8.0-all` for `net8.0`, `10.0-all` for `net10.0`). Set this in
+  `Directory.Build.props` for public server/function and endpoint-owning projects.
 
 Agent guidance synchronization is off unless a repository opts in from its
 root `Directory.Build.props`:
@@ -43,11 +47,12 @@ Local builds update managed files, while
 
 All B44 repositories, including released and production consumers, reference
 internal packages through a compatibility-bounded float. Pre-1.0 packages use
-`0.<minor>.*` (for example, `B44.Standards` and `B44.Common` currently use
-`0.5.*`); stable packages use `<major>.*`. Breaking changes bump the excluded
-minor or major boundary and require a deliberate consumer edit. Never use an
-unbounded `*`. Changes that expand Standards enforcement bump the Standards
-minor version rather than entering an existing patch float.
+`0.<minor>.*` (for example, `B44.Standards` currently uses `0.6.*`, while
+`B44.Common` consumers remain on the compatible `0.5.*` line); stable packages
+use `<major>.*`. Breaking changes bump the excluded minor or major boundary and
+require a deliberate consumer edit. Never use an unbounded `*`. Changes that
+expand Standards enforcement bump the Standards minor version rather than
+entering an existing patch float.
 
 Synchronization does not traverse common dependency, build-output, coverage,
 publish, IDE, or virtual-environment directories, and it never follows directory

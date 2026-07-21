@@ -12,6 +12,8 @@
     <B44AgentSyncProject>$(MSBuildProjectFullPath)</B44AgentSyncProject>
     <B44GameCoreProject>$(MSBuildProjectFullPath)</B44GameCoreProject>
     <B44EngineFreeCore>true</B44EngineFreeCore>
+    <!-- Also exercise the optional target-level-pinned security profile. -->
+    <B44SecuritySensitive>true</B44SecuritySensitive>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,6 +46,8 @@
   </Target>
 
   <Target Name="VerifyAgentGuidanceFixture" AfterTargets="B44SyncAgentGuidance">
+    <Error Condition="'$(AnalysisLevelSecurity)' != '8.0-all'"
+           Text="The security-sensitive profile did not pin net8.0 to AnalysisLevelSecurity=8.0-all; received '$(AnalysisLevelSecurity)'." />
     <Error Condition="!Exists('$(B44AgentRepositoryRoot)AGENTS.md')"
            Text="The Game profile did not generate a root AGENTS.md." />
     <Error Condition="!Exists('$(B44AgentRepositoryRoot)Nested\AGENTS.md')"

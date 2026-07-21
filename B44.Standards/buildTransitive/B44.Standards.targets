@@ -1,4 +1,14 @@
 <Project>
+  <!-- Public/network-facing projects opt into the complete SDK Security rule
+       category. Pin to the project's target-framework rule level so a newer
+       installed SDK cannot silently expand enforcement. Consumers can set
+       B44SecurityAnalysisLevel explicitly when they need a different pin. -->
+  <PropertyGroup Condition="'$(B44SecuritySensitive)' == 'true'">
+    <B44SecurityAnalysisLevel Condition="'$(B44SecurityAnalysisLevel)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != ''">$([System.String]::Copy('$(TargetFrameworkVersion)').Substring(1))-all</B44SecurityAnalysisLevel>
+    <B44SecurityAnalysisLevel Condition="'$(B44SecurityAnalysisLevel)' == ''">latest-all</B44SecurityAnalysisLevel>
+    <AnalysisLevelSecurity Condition="'$(AnalysisLevelSecurity)' == ''">$(B44SecurityAnalysisLevel)</AnalysisLevelSecurity>
+  </PropertyGroup>
+
   <!-- Layered enforcement, opt-in per project:
          <B44EngineFreeCore>true</B44EngineFreeCore>  — Godot-free Core of a
              game: bans Godot APIs at the symbol level, fails the build if a
@@ -8,7 +18,10 @@
          <B44Deterministic>true</B44Deterministic>    — any B44 project that
              wants ambient time/randomness banned (injected TimeProvider /
              explicit random source). Games' Cores get it via the flag above;
-             non-game repos can opt in directly. -->
+             non-game repos can opt in directly.
+         <B44SecuritySensitive>true</B44SecuritySensitive> — public/network
+             code: enables every built-in SDK Security rule at a target-level
+             pin (net8.0 => 8.0-all, net10.0 => 10.0-all). -->
   <PropertyGroup>
     <B44Deterministic Condition="'$(B44Deterministic)' == '' and '$(B44EngineFreeCore)' == 'true'">true</B44Deterministic>
   </PropertyGroup>
