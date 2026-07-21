@@ -9,7 +9,6 @@ agent policy ships through `B44.Standards`.
 
 | Namespace | Types | Origin |
 |---|---|---|
-| `B44.Common` | `Rgba`, `TimeProviderExtensions` | merged from the games |
 | `B44.Common.Diagnostics` | `StructuredGameLogger`, `LogCategory` (name struct — games declare their own constants), `LogSeverity`, `LogVerbosityConfig`, `StructuredLogEvent` | merge of all three games |
 | `B44.Common.Interfaces` | `IRandomSource` (+ default-interface `NextInt`/`NextDouble`), `SystemRandomSource` | merged from the games |
 | `B44.Common.Persistence` | `IRepository<T>`, `AtomicJsonFileStore<T>`, `InMemoryRepository<T>`, `RepositoryFactory.CreateWithFallback`, `SavePaths`, `StoreException` | genericized from one game's store |
@@ -30,7 +29,7 @@ and game guidance in root `CLAUDE.md` files and recursively generates sibling
 `AGENTS.md` mirrors. Consume with:
 
 ```xml
-<PackageReference Include="B44.Standards" Version="0.4.*" PrivateAssets="all" />
+<PackageReference Include="B44.Standards" Version="0.5.*" PrivateAssets="all" />
 ```
 
 This repo dogfoods the same files through its root `Directory.Build.props` and
@@ -47,18 +46,24 @@ Deliberately replaced by the BCL instead of shipping our own (v0.2):
   Godot bridge file). The old custom `Vec2` is gone.
 - **Time** — inject the BCL `TimeProvider` (`TimeProvider.System` in
   production, `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing`
-  in tests). `TimeProviderExtensions.GetUtcNowUnixSeconds()` keeps unix-second
-  call sites clean. The old `ITimeSource` family is gone.
+  in tests) and call `GetUtcNow().ToUnixTimeSeconds()` where needed. The old
+  `ITimeSource` family is gone.
 
 Evicted in v0.3 for failing the second-occurrence rule (both were
 single-consumer): `NumberFormatter` (lives in the one game that uses it) and `SafeConvert` (deleted outright — it had zero call sites even in its origin game). Re-admit either the moment a second game actually needs it.
+
+Evicted in v0.5 for the same reason: `Rgba` returned to TicTacHoe after
+Whispers' byte-based `GameColor` proved intentionally incompatible, and
+`TimeProviderExtensions.GetUtcNowUnixSeconds()` returned to TimeMachineClicker.
+Their focused tests moved with them. Re-admit either only when a second
+repository needs the exact same representation or behavior.
 
 ## Consuming (game repos)
 
 1. Reference the required package versions directly from nuget.org:
    ```xml
-   <PackageReference Include="B44.Common" Version="0.4.*" />
-   <PackageReference Include="B44.Standards" Version="0.4.*" PrivateAssets="all" />
+   <PackageReference Include="B44.Common" Version="0.5.*" />
+   <PackageReference Include="B44.Standards" Version="0.5.*" PrivateAssets="all" />
    ```
 2. Opt into synchronized agent guidance from the repository's
    `Directory.Build.props` if it is a B44-owned repository; see
@@ -77,6 +82,6 @@ licensed for reuse.
 
 ## Publishing
 
-Push a version tag: `git tag v0.2.0 && git push origin v0.2.0`. The publish
+Push a version tag: `git tag v0.5.0 && git push origin v0.5.0`. The publish
 workflow tests and packs both packages, then publishes them to nuget.org via
 Trusted Publishing (OIDC; no long-lived API key).

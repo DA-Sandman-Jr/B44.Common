@@ -13,7 +13,5 @@ dependency — usable in any .NET 8 project.
   `SavePaths`.
 - **`Quality.SourceSizeRatchet`** — baseline-pinned file-size check you run from
   your own test suite (new files capped; baselined files may shrink, never grow).
-- **`Rgba`**, **`TimeProviderExtensions`**.
-
 Unlicensed studio tooling (all rights reserved), published for our own
 credential-free restore across repos.

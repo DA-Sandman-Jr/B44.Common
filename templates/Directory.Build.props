@@ -49,7 +49,7 @@
          including production. B44.Standards is pre-1.0, so the minor version
          is the breaking-change boundary. -->
     <PackageReference Include="B44.Standards"
-                      Version="0.4.*"
+                      Version="0.5.*"
                       PrivateAssets="all" />
   </ItemGroup>
 </Project>

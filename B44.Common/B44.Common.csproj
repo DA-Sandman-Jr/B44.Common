@@ -2,10 +2,10 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <PackageId>B44.Common</PackageId>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <Authors>DA-Sandman-Jr</Authors>
     <Company>B44</Company>
-    <Description>Engine-free shared primitives for B44 games: Rgba, structured logging, injected randomness, TimeProvider helpers, and durable atomic JSON persistence.</Description>
+    <Description>Engine-free shared primitives for B44 games: structured logging, injected randomness, durable atomic JSON persistence, and source-size quality tooling.</Description>
     <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>B44.Common</RootNamespace>
