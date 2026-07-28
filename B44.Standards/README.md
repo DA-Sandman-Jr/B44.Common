@@ -47,7 +47,7 @@ Local builds update managed files, while
 
 All B44 repositories, including released and production consumers, reference
 internal packages through a compatibility-bounded float. Pre-1.0 packages use
-`0.<minor>.*` (for example, `B44.Standards` currently uses `0.6.*`, while
+`0.<minor>.*` (for example, `B44.Standards` currently uses `0.7.*`, while
 `B44.Common` consumers remain on the compatible `0.5.*` line); stable packages
 use `<major>.*`. Breaking changes bump the excluded minor or major boundary and
 require a deliberate consumer edit. Never use an unbounded `*`. Changes that
