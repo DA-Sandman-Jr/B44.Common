@@ -3,7 +3,8 @@
 Engine-free shared primitives and studio policy for B44 repositories, published
 as the `B44.Common` and `B44.Standards` packages on nuget.org. Bootstrap
 examples remain under [`/templates`](templates/README.md); ongoing build and
-agent policy ships through `B44.Standards`.
+agent policy ships through `B44.Standards`. Planned-but-unscheduled work is
+tracked in [`ROADMAP.md`](ROADMAP.md).
 
 ## What's in B44.Common
 
@@ -30,7 +31,7 @@ and game guidance in root `CLAUDE.md` files and recursively generates sibling
 `AGENTS.md` mirrors. Consume with:
 
 ```xml
-<PackageReference Include="B44.Standards" Version="0.6.*" PrivateAssets="all" />
+<PackageReference Include="B44.Standards" Version="0.7.*" PrivateAssets="all" />
 ```
 
 This repo dogfoods the same files through its root `Directory.Build.props` and
@@ -64,7 +65,7 @@ repository needs the exact same representation or behavior.
 1. Reference the required package versions directly from nuget.org:
    ```xml
    <PackageReference Include="B44.Common" Version="0.5.*" />
-   <PackageReference Include="B44.Standards" Version="0.6.*" PrivateAssets="all" />
+   <PackageReference Include="B44.Standards" Version="0.7.*" PrivateAssets="all" />
    ```
 2. Opt into synchronized agent guidance from the repository's
    `Directory.Build.props` if it is a B44-owned repository; see
@@ -83,6 +84,6 @@ licensed for reuse.
 
 ## Publishing
 
-Push a version tag: `git tag v0.6.0 && git push origin v0.6.0`. The publish
+Push a version tag: `git tag v0.7.0 && git push origin v0.7.0`. The publish
 workflow tests and packs both packages, then publishes them to nuget.org via
 Trusted Publishing (OIDC; no long-lived API key).
