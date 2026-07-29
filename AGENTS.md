@@ -156,6 +156,13 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
 - Publish = push a `v*` tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`);
   `release.yml` tests and packs both packages, then publishes to nuget.org
   through Trusted Publishing (OIDC; no long-lived API key).
+- **The tag is the version, and both packages ship in lockstep.** `release.yml`
+  derives `VERSION` from the tag and passes `-p:Version=$VERSION` to build and
+  pack, which overrides both csprojs. `B44.Common` and `B44.Standards` therefore
+  always publish at the same number, and the `<Version>` in each csproj is a
+  local hint that the release ignores — keep it matching the next intended tag
+  so it does not mislead. Independent per-package versions would need per-package
+  tags and a reworked release workflow; that is not what exists today.
 - After publishing a breaking change, bump each consumer's compatibility
   boundary deliberately. Compatible releases flow through bounded floats.
 

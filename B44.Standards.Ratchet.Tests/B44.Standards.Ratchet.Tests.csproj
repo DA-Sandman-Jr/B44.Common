@@ -13,7 +13,7 @@
          skips it and the fixture drives the task directly. -->
     <_FixtureRoot>$(MSBuildProjectDirectory)\obj\RatchetFixture\</_FixtureRoot>
 
-    <!-- Assertion 6 deliberately feeds the task a malformed baseline and
+    <!-- Assertion 7 deliberately feeds the task a malformed baseline and
          downgrades the resulting B44R001 error to a warning so the fixture can
          inspect the outcome. Demote it further to a message: a green build must
          not carry a warning that is actually a passing negative test. -->
@@ -25,7 +25,7 @@
     <!-- Delete the specific artifacts each run depends on being absent or
          regenerated, rather than the whole tree: a RemoveDir here fails
          whenever anything holds a handle on the fixture directory. -->
-    <Delete Files="$(_FixtureRoot)missing-baseline.txt;$(_FixtureRoot)ratchet-baseline.txt;$(_FixtureRoot)broken-baseline.txt" />
+    <Delete Files="$(_FixtureRoot)missing-baseline.txt;$(_FixtureRoot)ratchet-baseline.txt;$(_FixtureRoot)broken-baseline.txt;$(_FixtureRoot)commented-baseline.txt" />
 
     <!-- Small.cs: 3 lines, under every threshold. -->
     <WriteLinesToFile File="$(_FixtureRoot)Core\Small.cs" Lines="// a;// b;// c" Overwrite="true" />
@@ -158,7 +158,31 @@
     <Error Condition="'$(_ShrinkViolations)' != '0'"
            Text="Shrinking under a baseline entry was reported as a violation; got $(_ShrinkViolations)." />
 
-    <!-- 6. A malformed baseline must fail loudly rather than degrade into an
+    <!-- 6. Regeneration carries each entry's "# reason" comment across. Those
+            comments are the record of why a file was granted an exception, and
+            an extraction elsewhere in the repo must not erase the justification
+            for every other entry. Also asserts a regeneration that changes
+            nothing is byte-identical, spacing included. -->
+    <WriteLinesToFile File="$(_FixtureRoot)commented-baseline.txt" Overwrite="true"
+                      Lines="# B44 source-size ratchet baseline. Files listed here exceed the;# 350-line tracking threshold and may not grow past their recorded size.;# Regenerated via: dotnet build &lt;anchor project&gt; -t:B44WriteRatchetBaseline;Core/Oversized.cs = 600  # declarative catalog, reviewed 2026-07-29;Core/Tracked.cs = 360" />
+    <B44SourceSizeRatchetTask
+      RepositoryRoot="$(_FixtureRoot)"
+      BaselinePath="$(_FixtureRoot)commented-baseline.txt"
+      ExcludedDirectories="@(_FixtureExclude)"
+      NewFileMaxLines="500"
+      TrackThresholdLines="350"
+      WriteBaseline="true"
+      FailOnViolation="true" />
+    <ReadLinesFromFile File="$(_FixtureRoot)commented-baseline.txt">
+      <Output TaskParameter="Lines" ItemName="_CommentedLines" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <_CommentedText>@(_CommentedLines, '|')</_CommentedText>
+    </PropertyGroup>
+    <Error Condition="$([System.String]::Copy('$(_CommentedText)').Contains('Core/Oversized.cs = 600  # declarative catalog, reviewed 2026-07-29')) != 'True'"
+           Text="Regeneration dropped an entry's reason comment or its spacing. Got: $(_CommentedText)" />
+
+    <!-- 7. A malformed baseline must fail loudly rather than degrade into an
             empty baseline, which would silently disable the gate. -->
     <WriteLinesToFile File="$(_FixtureRoot)broken-baseline.txt" Lines="Core/Tracked.cs = not-a-number" Overwrite="true" />
     <B44SourceSizeRatchetTask
