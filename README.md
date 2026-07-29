@@ -3,8 +3,8 @@
 Engine-free shared primitives and studio policy for B44 repositories, published
 as the `B44.Common` and `B44.Standards` packages on nuget.org. Bootstrap
 examples remain under [`/templates`](templates/README.md); ongoing build and
-agent policy ships through `B44.Standards`. Planned-but-unscheduled work is
-tracked in [`ROADMAP.md`](ROADMAP.md).
+agent policy ships through `B44.Standards`. Planned-but-unscheduled work and
+known defects are tracked in [`BACKLOG.md`](BACKLOG.md).
 
 ## What's in B44.Common
 
