@@ -155,11 +155,29 @@ template that would need to change when policy changes is a sign it belongs in
 
 ### 3. Promote the source-size ratchet gate into `B44.Standards`
 
-**Status:** B44 side done in `B44.Standards` 0.8.0 (2026-07-29). Consumer
-migration is **blocked on publishing** that version — the games consume
-B44.Standards as a package, and there is no local feed, so their forked test
-files cannot come out until 0.8.0 is on nuget.org. See
-[Remaining](#remaining-blocked-on-publish) at the end of the entry.
+**Status:** **Done 2026-07-29.** Shipped in `B44.Standards` 0.8.1 and adopted by
+all three games. Zero forked `ArchitectureRatchetTests.cs` remain in the
+portfolio. Drop this entry at the next release.
+
+Two things surfaced during consumer migration that the plan had not anticipated:
+
+- **Time Machine Clicker had a third fork.** The source handoff named only
+  TicTacHoe and Whispers; TMC carried the same file. Migrated with the others.
+- **Regeneration destroyed per-entry `# reason` comments** — found on TMC's
+  baseline, which documents each exception inline. That is the exception
+  mechanism, not decoration, so a regeneration performed for an unrelated
+  extraction would have erased every other entry's justification. Fixed in
+  0.8.1; regeneration now carries comments across, preserving spacing so a
+  no-op regeneration stays byte-identical. The deprecated
+  `SourceSizeRatchet.WriteBaseline` had the same flaw and merely documented it.
+
+**Whispers' baseline values were deliberately left alone.** A full regeneration
+there would also tighten four entries and track one new file, because its
+sources drifted since the baseline was last written — which is precisely the
+defect this entry fixed, since no regeneration entry point existed. Every drift
+is a shrink or a new sub-500 file, so none is a violation. Baselines move only
+in a commit that performs a real extraction, so that regeneration is left as a
+separate deliberate call.
 
 **Shipped:**
 
@@ -206,23 +224,6 @@ line changes from `# Regenerated via SourceSizeRatchet.WriteBaseline ...` to one
 naming the new command. That is a comment, not a tracked value, so it does not
 violate the "baselines change only in an extraction commit" rule — but it does
 mean the first regeneration in each game produces a one-line diff. Expect it.
-
-#### Remaining (blocked on publish)
-
-Per game repository, after `B44.Standards` 0.8.0 is published:
-
-1. Add the `B44Ratchet*` block and `B44RatchetExclude` items to
-   `Directory.Build.props` (excludes: the test project and `.godot`).
-2. Delete `ArchitectureRatchetTests.cs`.
-3. Regenerate the baseline once to pick up the new header, and confirm the only
-   diff is that line.
-4. Update the repository's `CLAUDE.md` ratchet paragraph to name
-   `dotnet build <anchor project> -t:B44WriteRatchetBaseline`, replacing the
-   prose describing an operation that had no entry point.
-
-Validate per `.b44/B44.Tooling.md`: `dotnet restore --no-cache` on the first
-consumer validation, and `/nodeReuse:false -p:UseSharedCompilation=false -m:1`
-for build and test runs.
 
 **Original problem statement, retained for context:** — blocked on one user decision (see below).
 
