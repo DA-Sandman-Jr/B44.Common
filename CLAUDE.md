@@ -12,6 +12,7 @@
 - Treat roughly 350 physical lines as a review warning for production source files. New production files should normally stay at or below 500 lines; files above 650 lines require a clear cohesion-based reason.
 - Existing oversized files must not grow unless the same change performs a real extraction and leaves the file smaller. Coordinators coordinate; do not evade the limit with cosmetic partial classes, one-method services, generic utility dumping grounds, or needless factories.
 - Before automated analyzer fixes, baseline measurement, scripted bulk text rewrites, or consuming a freshly published package, read `.b44/B44.Tooling.md`.
+- Each repository keeps a root `BACKLOG.md` for agreed-but-not-started work and known defects, with defects in their own section so they stay distinct from planned work. It is authored by hand, never generated and never gated by the build — an empty file written to satisfy a check is worse than no file. Cross-repository programs live once in `B44.Common`'s backlog; a consumer's backlog links to the program and holds only its own share of the work, never a restatement that can drift.
 - Isolation is by repository, not by folder. Engine- or framework-coupled code (`B44.Godot`, any future adapter) and third-party code we vendor, port, or convert each live in their own repository publishing their own package, never inside a normal B44 repository. Engine coupling keeps the engine-free MSBuild guard literally true with no carve-outs and decouples our cadence from the engine's. Third-party code is a licensing boundary: B44 packages are all rights reserved — source public for reference, not licensed for reuse — so an obligation-bearing file inside one contradicts its own terms. Converting or hand-porting does NOT shed the upstream license; a port is a derivative work and the attribution obligation follows it. Each such repository carries its own `LICENSE` and `THIRD-PARTY-NOTICES.md`. A separate project in-tree is not a substitute: it would require weakening the guard, or dual-licensing within one tree.
 
 ### Clean-Room Reimplementation — Protocol
@@ -45,12 +46,18 @@ guidance distributed through `B44.Standards`.
   least two games need it (or demonstrably will within the current effort).
   This is not a utility dumping ground.
 - **No save backwards-compatibility is a PRE-RELEASE rule.** While a game is
-  unreleased, unreadable saves throw `StoreException` and get reset by
-  `RepositoryFactory` (after `AtomicJsonFileStore`'s automatic last-good
-  `.bak` recovery), never format-migrated. At each game's 1.0 this flips:
-  released saves are a compatibility surface, and that game adds a versioned
-  envelope + migration chain on top. The store itself stays format-agnostic
-  either way.
+  unreleased, unreadable saves throw `StoreException` and may be reset rather
+  than format-migrated (after `AtomicJsonFileStore`'s automatic last-good
+  `.bak` recovery). At each game's 1.0 this flips: released saves are a
+  compatibility surface, and that game adds a versioned envelope + migration
+  chain on top. The store itself stays format-agnostic either way.
+- **Destructive policy is the game's call, never the factory's.**
+  `RepositoryFactory.CreateWithFallback` takes a required
+  `UnreadableSavePolicy`; there is no default. `Preserve` leaves unreadable
+  bytes untouched and runs the session in memory, `Reset` deletes and stays
+  file-backed. A shared factory must not decide on a game's behalf whether a
+  player's save gets discarded — pre-release games may still choose `Reset`,
+  but the choice has to be visible at the call site.
 - **Determinism is API.** `SystemRandomSource` seeded sequences must match
   raw `System.Random` (tests pin this). Changing them breaks game test suites
   downstream.
@@ -155,9 +162,11 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
 - `B44.Common/` — the package. Root namespace `B44.Common`; sub-namespaces
   mirror the games' old folder names (`Diagnostics`, `Interfaces`,
   `Persistence`) so migration was/is a mechanical namespace swap. `Quality/`
-  holds `SourceSizeRatchet` — the baseline-pinned file-size check (the one
-  custom quality tool alongside the MSBuild guard; no analyzer implements
-  relative-to-baseline no-growth).
+  holds `SourceSizeRatchet`, now `[Obsolete]`: the ratchet is a build-time
+  gate, so it lives in `B44.Standards` as the `B44VerifyRatchet` /
+  `B44WriteRatchetBaseline` target pair. The type stays one minor for consumers
+  to migrate off, then goes. No analyzer implements relative-to-baseline
+  no-growth, which is why this is custom at all.
 - `B44.Standards/` — build and agent policy as a package (analyzers via plain
   package dependencies, buildTransitive props/targets, canonical managed
   guidance under `guidance/`, `config/` globalconfigs +
@@ -167,7 +176,14 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
   configs and creates unoverridable conflicts (CA1861 taught us). Tuning
   changes go through this package, never per-repo editorconfigs.
   `MA0048` (one type per file) is deliberately NOT enabled; sanctioned
-  multi-type files are B44 style. `TreatWarningsAsErrors` is staged per repo
+  multi-type files are B44 style. The source-size ratchet also lives here:
+  `B44VerifyRatchet` runs on every build when `B44RatchetEnabled=true`, and
+  `B44WriteRatchetBaseline` is a separate manual target hooked to nothing.
+  Regenerating a baseline is an explicit act performed in the same change as a
+  real extraction — a gate that can rewrite its own expectations during an
+  ordinary build is not a gate. **An agent must never grant itself a ratchet
+  exception** by raising a baseline entry or editing the configuration; when
+  the build fails on the ratchet, do the extraction, or stop and ask David. `TreatWarningsAsErrors` is staged per repo
   AFTER its allowlist is tuned, not day one.
 - `B44.Common.Tests/` — xunit.v3. `<TestingPlatformDotnetTestSupport>true`
   is required for `dotnet test` to discover xunit.v3 on current SDKs.
