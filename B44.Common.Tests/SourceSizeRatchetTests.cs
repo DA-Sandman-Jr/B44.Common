@@ -7,6 +7,12 @@ using Xunit;
 
 namespace B44.Common.Tests;
 
+// SourceSizeRatchet is deprecated in favour of the B44.Standards build target
+// (covered by B44.Standards.Ratchet.Tests). These tests stay green until the
+// type is removed a minor from now, so the deprecated path cannot rot while
+// consumers are still migrating onto the target.
+#pragma warning disable CS0618 // Type or member is obsolete
+
 public class SourceSizeRatchetTests : IDisposable
 {
     private readonly string _tempDir;
@@ -152,3 +158,5 @@ public class SourceSizeRatchetTests : IDisposable
         return dir?.FullName ?? throw new InvalidOperationException("Repo root not found from test base directory.");
     }
 }
+
+#pragma warning restore CS0618

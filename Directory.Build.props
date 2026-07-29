@@ -8,6 +8,13 @@
     <B44AgentRepositoryRoot>$(MSBuildThisFileDirectory)</B44AgentRepositoryRoot>
     <B44AgentSyncProject>$(MSBuildThisFileDirectory)B44.Common\B44.Common.csproj</B44AgentSyncProject>
 
+    <!-- Dogfood the source-size ratchet too. Same anchor project, so both
+         repository-wide checks run exactly once per build. -->
+    <B44RatchetEnabled>true</B44RatchetEnabled>
+    <B44RatchetProject>$(MSBuildThisFileDirectory)B44.Common\B44.Common.csproj</B44RatchetProject>
+    <B44RatchetRepositoryRoot>$(MSBuildThisFileDirectory)</B44RatchetRepositoryRoot>
+    <B44RatchetBaseline>$(MSBuildThisFileDirectory)ratchet-baseline.txt</B44RatchetBaseline>
+
     <Nullable>enable</Nullable>
     <!-- Shared package and policy builds must never normalize a new warning
          into the baseline. Consumer repositories opt into this independently. -->
@@ -23,6 +30,15 @@
          document every public member. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Test projects exceed the ratchet by doctrine; templates are copied
+         examples, not this repository's production source. -->
+    <B44RatchetExclude Include="B44.Common.Tests" />
+    <B44RatchetExclude Include="B44.Standards.AgentGuidance.Tests" />
+    <B44RatchetExclude Include="templates" />
+    <B44RatchetExclude Include="artifacts" />
+  </ItemGroup>
 
   <!-- Dogfood the B44.Standards policy this repo publishes. Games consume the
        same files via the package's buildTransitive assets. -->

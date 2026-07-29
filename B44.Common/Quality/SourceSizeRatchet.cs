@@ -18,8 +18,14 @@ public sealed record RatchetViolation(string RelativePath, int Lines, int Limit,
 ///
 /// Baseline format, one entry per line, '#' starts a comment:
 ///   Path/To/File.cs = 612          # optional reason, e.g. cohesive catalog
-/// Regenerate after a sanctioned extraction with <see cref="WriteBaseline"/>.
 /// </summary>
+[Obsolete(
+    "Superseded by the B44.Standards ratchet build target, which gates every " +
+    "build rather than only test runs and single-sources the exclude list in " +
+    "MSBuild. Set the B44Ratchet* properties in Directory.Build.props; " +
+    "regenerate with 'dotnet build <anchor project> -t:B44WriteRatchetBaseline'. " +
+    "This type is retained for one minor so consumers can migrate, and is " +
+    "removed after that.")]
 public static class SourceSizeRatchet
 {
     public const int NewFileMaxLines = 500;
