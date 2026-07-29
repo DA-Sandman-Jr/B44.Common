@@ -514,10 +514,36 @@
                 // regeneration that silently rewrites every line is
                 // indistinguishable from one that changed a value.
                 var newline = System.Environment.NewLine;
+                // Carry each entry's trailing "# reason" across the rewrite.
+                // Those comments are the record of WHY a file was granted an
+                // exception; regenerating after an unrelated extraction must
+                // not quietly erase the justification for every other entry.
+                // (Standalone comment lines between entries are not preserved —
+                // put a reason on the entry it belongs to.)
+                var comments = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.Ordinal);
                 if (System.IO.File.Exists(BaselinePath))
                 {
                     var existing = System.IO.File.ReadAllText(BaselinePath);
                     newline = existing.IndexOf("\r\n", System.StringComparison.Ordinal) >= 0 ? "\r\n" : "\n";
+
+                    foreach (var rawLine in System.IO.File.ReadLines(BaselinePath))
+                    {
+                        var hash = rawLine.IndexOf('#');
+                        if (hash <= 0) continue;
+
+                        var entryPart = rawLine.Substring(0, hash);
+                        var equals = entryPart.IndexOf('=');
+                        if (equals < 0) continue;
+
+                        var entryPath = entryPart.Substring(0, equals).Trim().Replace('\\', '/');
+                        if (entryPath.Length == 0) continue;
+
+                        // Keep the original spacing before the '#' so a
+                        // regeneration with no real change stays byte-identical.
+                        var wsStart = hash;
+                        while (wsStart > 0 && (entryPart[wsStart - 1] == ' ' || entryPart[wsStart - 1] == '\t')) wsStart--;
+                        comments[entryPath] = rawLine.Substring(wsStart);
+                    }
                 }
 
                 var builder = new System.Text.StringBuilder();
@@ -529,7 +555,10 @@
                 foreach (var source in sources)
                 {
                     if (source.Value <= TrackThresholdLines) continue;
-                    builder.Append(source.Key).Append(" = ").Append(source.Value).Append(newline);
+                    builder.Append(source.Key).Append(" = ").Append(source.Value);
+                    string carriedComment;
+                    if (comments.TryGetValue(source.Key, out carriedComment)) builder.Append(carriedComment);
+                    builder.Append(newline);
                     recorded++;
                 }
 
