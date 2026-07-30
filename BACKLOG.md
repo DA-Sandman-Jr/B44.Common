@@ -359,8 +359,10 @@ with the gate.
 
 **Status:** In progress — decided and implemented in this repository 2026-07-29
 (guidance bullet added to `B44.Organization.md`, `ROADMAP.md` renamed,
-`README.md` updated). Remaining: the three game repositories adopt `BACKLOG.md`
-after they take the B44.Standards release carrying the guidance.
+`README.md` updated). Remaining: every B44 consumer without a root
+`BACKLOG.md` adopts it when next worked on, whether it is a game, library, or
+hosted application. BeforeForeverAfter adopted it 2026-07-30 alongside its
+private-package restore follow-up.
 
 Every B44 repository accumulates "agreed but not started" work and "known broken,
 not yet fixed" defects. Neither has a standard home, so both land wherever the
@@ -416,10 +418,12 @@ of them.
 this file `ROADMAP.md` → `BACKLOG.md` (via `git mv`, so history follows) and
 updated the one reference in [`README.md`](README.md).
 
-**Remaining, per game repository:** create `BACKLOG.md`; fold or link TicTacHoe's
+**Remaining, per repository:** create `BACKLOG.md`; fold or link TicTacHoe's
 `docs/expansion-plan.md` and `docs/gap-assessment.md`; leave Whispers'
 `docs/handoffs/` as-is. None of this is blocking — the guidance describes a
 convention, and a repo adopts it the next time someone is in there.
+
+This applies to games, libraries, and hosted applications alike.
 
 ### 5. Make destructive save policy an explicit game choice — DONE 2026-07-29
 
