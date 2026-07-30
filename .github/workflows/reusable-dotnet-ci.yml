@@ -48,9 +48,14 @@ jobs:
       - name: Verify formatting
         run: |
           set -euo pipefail
-          SLN=$(ls *.sln | head -1)
+          # Accept .slnx as well as .sln: `dotnet new sln` emits the XML format
+          # on current SDKs, so every repository created from now on has one.
+          # The `|| true` matters — under `set -e`, a non-matching glob makes
+          # `ls` fail and kills the step before the emptiness check below can
+          # run, which made the "nothing to check" branch unreachable.
+          SLN=$( { ls *.sln *.slnx 2>/dev/null || true; } | head -1 )
           if [ -z "$SLN" ]; then
-            echo "No .sln at repo root — nothing to check."
+            echo "No solution at repo root — nothing to check."
             exit 0
           fi
           dotnet format "$SLN" --verify-no-changes
