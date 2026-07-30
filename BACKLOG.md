@@ -450,10 +450,31 @@ BeforeForeverAfter earlier that day. Notes from doing it:
 - Whispers had a `BACKLOG.md` that was deliberately deleted in `4eae4b6` as
   "outdated or empty" (it was three lines). The new one is not a resurrection of
   removed content.
-- TicTacHoe's `docs/expansion-plan.md` and `docs/gap-assessment.md` are **still
-  unfolded** — the new backlog holds only the architecture workstream. Folding or
-  linking them remains open.
 - Whispers' `docs/handoffs/` left as-is, as intended.
+
+**Pre-existing backlog-like documents folded 2026-07-30.** Surveyed everything
+`.md` in the three games and folded only what was a genuine competing list of
+open work:
+
+- **Whispers `docs/design/gap-backlog.md` → folded and removed.** It was a second
+  live backlog — its own header instructed readers to "fold them in here so
+  nothing is lost across sessions," which is exactly the drift this convention
+  prevents. Its open items moved under gameplay/UX/release-readiness headings,
+  its source provenance and shipped-work record moved to Notes, and the four
+  references to it in `agent-task-prompts.md` were repointed.
+- **TicTacHoe `docs/gap-assessment.md` → gaps folded, file kept.** It was half
+  scope-reference and half open work. The engineering and product gaps moved to
+  the backlog; the file remains as a scope and status record with a pointer.
+- **Left alone as design records, specs, or reference:** TicTacHoe's
+  `expansion-plan.md` (every phase in its status table is `done`),
+  `three-player-design.md`, `SCREEN_LAYOUT.md`; Whispers'
+  `item-instance-refactor.md` (shipped), `docs/design/mechanics/` specs,
+  `progression-enemy-ai-analysis.md`, and `agent-task-prompts.md` (task detail
+  companion, not a competing list); TMC's `ART_DIRECTION.md`.
+
+The distinction applied throughout: a document listing *what is still open* is a
+backlog and gets folded; a document describing *what something is or was decided
+to be* is a record and stays.
 
 **Remaining:** any B44 consumer without a root `BACKLOG.md` adopts it when next
 worked on, whether game, library, or hosted application. Not blocking — the
