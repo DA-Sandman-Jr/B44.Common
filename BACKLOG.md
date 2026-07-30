@@ -106,16 +106,32 @@ Measured across the three games, the gate is met:
   divergence is drift between copies, which argues for consolidating rather than
   against. Time Machine Clicker has no copy.
 
-**But the extraction wins less than it looks.** Whispers' file carries a
-load-bearing `global using` alias block for `LogCategory`, `LogSeverity`, and
-`StructuredGameLogger`, because Godot's GD0102 source generator cannot marshal
-cross-assembly enums into `[Export]` properties, and `SaveManager` and
-`DungeonController` both `[Export]` a `LogSeverity`. Moving the sink factory
-into `B44.Godot` does **not** fix that — the enums still live in `B44.Common`,
-still a separate assembly from the game. Each game keeps its alias block either
-way. So the extraction saves roughly 25–40 lines per game and removes the drift
-risk; it does not remove the GD0102 friction, which is the part that actually
-hurts. Weigh that before spending a repository on it.
+**The GD0102 objection is void — tested 2026-07-29.** This entry previously
+recorded that Whispers' load-bearing `global using` alias block would survive
+any extraction, because Godot's generator could not marshal cross-assembly
+enums into `[Export]` properties and the enums live in `B44.Common` either way.
+That is no longer true on Godot 4.7, which all three games target. Verified by
+rebuilding Whispers with `EmitCompilerGeneratedFiles` and reading the output:
+each `[Export] LogSeverity` property produces a complete entry in
+`*_ScriptProperties.generated.cs`, marshalling through
+`VariantUtils.ConvertTo<B44.Common.Diagnostics.LogSeverity>` and registering
+with `PropertyHint.Enum`. The aliases are gone from Whispers, and the stale
+notes in both games' files are corrected.
+
+**So the remaining question is purely whether ~80–120 lines justify a
+repository.** With GD0102 removed, extraction buys ~25–40 lines per game and
+eliminates the `NodePathValidator` drift; it costs a repository with its own
+`LICENSE`, CI, release cadence, Godot version pin, an extra float in three
+consumers, and a second publish whenever a change spans both packages.
+
+**Recommendation: not yet.** Set an explicit trigger instead — create
+`B44.Godot` when a third distinct adapter appears, or when the adapters exceed
+roughly 150 lines in total, whichever comes first. The honest tension is that
+the interim means de-drifting the two `NodePathValidator` copies by hand
+(TicTacHoe's descriptive `InvalidOperationException` is the better of the two),
+which is fork maintenance the organization rule dislikes — but no package owns
+Godot-side code yet, so there is nothing to fix it in without paying the whole
+packaging cost first.
 
 **Open questions to resolve before starting:**
 
