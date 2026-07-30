@@ -498,10 +498,38 @@ needs it.
 Counter-argument worth weighing: the same person owns both sides of every one of
 these boundaries, so "consumers cross manually" is one developer crossing their
 own boundary, and a rule that only ever inconveniences its author may not be
-carrying its weight. If the ratchet-as-build-error work
-([entry 3](#3-promote-the-source-size-ratchet-gate-into-b44standards)) lands
-first, that is the concrete test case — decide this after seeing how disruptive
-that crossing actually is.
+carrying its weight.
+
+#### Evidence from the 0.8.x releases (2026-07-29/30)
+
+[Entry 3](#3-promote-the-source-size-ratchet-gate-into-b44standards) was the
+concrete test case this entry was waiting on, and it ran. Both halves of the
+current scheme behaved as designed:
+
+- **The minor crossing was cheap.** Three games went `0.5.* -> 0.8.*` at roughly
+  two lines each. The stop was not expensive; it was just a stop.
+- **The patch flowed silently.** 0.8.0 -> 0.8.1 (the reason-comment fix) and
+  0.8.2 reached every consumer with no action at all.
+
+**Revised recommendation: do not widen either package.** The stop cost almost
+nothing and it landed on exactly the change that alters what fails a build.
+
+**Because the real cost was never the edit — it was noticing.** `B44.Standards`
+sat at 0.7.0 in-tree, bumped but never tagged or released, and nobody spotted it
+until a consumer restore failed with "nearest version 0.6.0". Widening the float
+would not have helped with that at all; it is a notification problem wearing a
+versioning problem's clothes.
+
+**Candidate fix, untested:** Dependabot on the NuGet ecosystem in each consumer,
+which opens a PR when a new minor falls outside the repo's current float. The
+deliberate gate survives — a human still reviews and merges — while the "did I
+miss a release" burden goes away. The caveat is real: Dependabot's NuGet support
+is uneven with wildcard versions like `0.8.*`, and it may not fire at all on a
+constraint that is already satisfiable. Verify on one repository before rolling
+it out. If it will not cooperate, a small scheduled workflow in this repository
+comparing each consumer's pinned boundary against the latest published version,
+opening an issue on drift, does the same job with more control and no dependency
+on Dependabot's wildcard behavior.
 
 ---
 
