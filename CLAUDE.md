@@ -74,8 +74,12 @@ broken its own file format between majors) plus native-binary export friction
 (SQLite). Durability concerns are answered in-store instead: flush-to-disk
 before the rename, and `.bak` rotation with automatic recovery on load — the
 tests pin all of it. Versioned-envelope/migration helpers land in this package
-only when a second game needs them at 1.0 (one game's save-envelope
-implementation is the first occurrence).
+only when **two games need materially equivalent envelope behavior**, or a game
+approaches released saves / 1.0. A game merely *having* a save version does not
+trigger it — a local version field is game-owned and expected. (Refined
+2026-07-30: the earlier wording keyed off a second game's envelope *existing*,
+which Time Machine Clicker's planned save version would satisfy mechanically
+while proving nothing about shared behavior.)
 
 ## Custom Logger — Decision Record & Flip Conditions
 

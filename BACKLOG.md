@@ -69,81 +69,103 @@ tree for Category B.
 
 ## Planned
 
-### 1. Add the small `B44.Godot` package; migrate the logger sinks and `NodePathValidator`
+### 1. Create `B44.Godot`: composition smoke testing, then the shared adapters
 
-**Status:** Planned
+**Status:** Planned — **decided 2026-07-30 to build it.** This entry previously
+recommended *not yet*, with a trigger of "a third distinct adapter, or ~150
+lines." The Godot composition smoke harness is that third adapter, and it
+carries the strongest shared-behavior argument of the three, so the trigger is
+satisfied.
 
-Each game currently keeps its own Godot-side adapter code, which is the second
-occurrence several times over:
+#### Why the CI lives here and not in `B44.Common`
 
-- `GodotLoggerFactory` — the per-game factory that builds the sink delegate
-  `StructuredGameLogger` takes (see
-  [`StructuredGameLogger.cs:73`](B44.Common/Diagnostics/StructuredGameLogger.cs:73)).
-- The `GD.PushWarning` warning sink passed to
-  `RepositoryFactory.CreateWithFallback` (see
-  [`RepositoryFactory.cs:7`](B44.Common/Persistence/RepositoryFactory.cs:7)).
-- `NodePathValidator`, alongside the `*Paths.cs` convention.
+A composition smoke test must assert that autoloads resolved and declared
+NodePaths are valid. That is engine-side C# (`using Godot`), which `B44.Common`
+cannot host — the engine-free rule is enforced by an MSBuild guard, and the
+isolation rule puts engine-coupled code in its own repository. Only pure YAML
+orchestration could live in `B44.Common`, and a YAML-only workflow can assert
+little beyond "the process exited non-zero," which pushes the real validation
+back into three per-game copies.
 
-Scope it deliberately small: a thin adapter package over primitives that already
-exist in `B44.Common`, not a second home for game logic. The second-occurrence
-rule applies here exactly as it does to `B44.Common`.
+The workflow and the harness are also one contract in two respects: the success
+marker the harness emits is what the workflow asserts on, and the Godot version
+the workflow installs must match the GodotSharp the harness compiles against.
+Nothing enforces either pairing across a repository boundary.
 
-**Second-occurrence gate — MEASURED 2026-07-29.** The handoff behind
-[P1 §4.5](#p1-portfolio-persistence-framework) asks that nothing move here until
-materially equivalent, stable behavior is proven in at least two real consumers.
-Measured across the three games, the gate is met:
+Resulting rule, worth stating once: **CI lives with the thing it tests.**
+`B44.Common` keeps the engine-free .NET reusable workflow; `B44.Godot` owns the
+Godot one.
+
+#### 1A. Repository + smoke harness + reusable workflow
+
+Do this first, and do not bundle the adapter migration into it.
+
+- Own `LICENSE` and `THIRD-PARTY-NOTICES.md`, per the isolation rule.
+- Cannot set `B44EngineFreeCore=true`. Record which `B44.Standards` enforcement
+  it does adopt, and whether `B44Deterministic` applies.
+- Pin the supported Godot/GodotSharp range and document the versioning policy.
+  **Note what it is diverging from:** `B44.Common` and `B44.Standards` publish in
+  lockstep from a single `v*` tag — `release.yml` derives `VERSION` from the tag
+  and passes `-p:Version=$VERSION` to both. A third package either joins that
+  scheme or needs its own tag convention; it cannot silently assume independence.
+- Harness: observe a game-provided ready/failed startup state, validate required
+  autoloads and declared NodePaths, detect startup exceptions and engine errors,
+  emit one standardized success marker, exit with a deterministic code.
+- The game lifecycle state and the harness marker are **not** the same
+  abstraction. The game exposes ready/failed; the harness observes it; the
+  harness emits the standard marker; the workflow validates marker and exit code.
+- Workflow: `godot-version` required with no default (so each game owns its pin
+  and this repository never needs editing on a Godot release); project path and
+  smoke-test entry point as inputs; job-level timeout so a project that fails to
+  exit fails the job rather than hanging the runner; verify the requested Godot
+  version is compatible with the game project's `Godot.NET.Sdk` version.
+- Leave `B44.Common`'s engine-free .NET workflow unchanged. Add no Godot
+  dependency to any `B44.Common` assembly.
+- Wire at least one game before calling it done — prefer Whispers if its
+  startup-readiness work has landed, otherwise the simplest game first.
+- **Serial dependency, plan for it:** `B44.Godot` must be created, packaged,
+  published to nuget.org, and consumed before any game can adopt the harness —
+  the same publish-then-migrate cycle the `B44.Standards` 0.8.x work used.
+
+#### 1B. Migrate the shared adapters (after 1A works)
+
+Second-occurrence gate — **measured 2026-07-29**, all three confirmed against
+the repositories:
 
 - **Godot logger sink — 3/3 games.** `TicTacHoe/Diagnostics/GodotLoggerFactory.cs`,
   `TimeMachineClicker/Diagnostics/GodotLoggerFactory.cs`, and Whispers'
   `Scripts/Diagnostics/StructuredGameLogger.cs` all map severity to
   `GD.PushError` / `GD.PushWarning` / `GD.Print`. Behaviorally identical; the
   diffs are an `if`-chain vs a `switch` and an expression body. TicTacHoe's file
-  documents the fork in its own summary ("Mirrors
-  `Whispers.Scripts.Diagnostics.GodotLoggerFactory`").
+  documents its own fork ("Mirrors `Whispers.Scripts.Diagnostics.GodotLoggerFactory`").
 - **`NodePathValidator` — 2/3 games.** TicTacHoe (49 lines) and Whispers (48)
-  differ only in namespace and one throw: `InvalidOperationException` with a
-  descriptive message vs a bare `ArgumentNullException(property.Name)`. That
-  divergence is drift between copies, which argues for consolidating rather than
-  against. Time Machine Clicker has no copy.
+  differ only in namespace and one throw: a descriptive
+  `InvalidOperationException` vs a bare `ArgumentNullException(property.Name)`.
+  **Take TicTacHoe's.** Time Machine Clicker has no copy.
+- The `GD.PushWarning` warning sink passed to
+  [`RepositoryFactory.CreateWithFallback`](B44.Common/Persistence/RepositoryFactory.cs:7).
 
-**The GD0102 objection is void — tested 2026-07-29.** This entry previously
-recorded that Whispers' load-bearing `global using` alias block would survive
-any extraction, because Godot's generator could not marshal cross-assembly
-enums into `[Export]` properties and the enums live in `B44.Common` either way.
-That is no longer true on Godot 4.7, which all three games target. Verified by
-rebuilding Whispers with `EmitCompilerGeneratedFiles` and reading the output:
-each `[Export] LogSeverity` property produces a complete entry in
+Scope it deliberately small: a thin adapter package over primitives that already
+exist in `B44.Common`, not a second home for game logic.
+
+**Do not reintroduce the GD0102 `global using` workaround.** Tested 2026-07-29:
+Godot 4.7 marshals cross-assembly enums into `[Export]` properties correctly.
+Verified by rebuilding Whispers with `EmitCompilerGeneratedFiles` and reading the
+output — each `[Export] LogSeverity` property produces a complete entry in
 `*_ScriptProperties.generated.cs`, marshalling through
-`VariantUtils.ConvertTo<B44.Common.Diagnostics.LogSeverity>` and registering
-with `PropertyHint.Enum`. The aliases are gone from Whispers, and the stale
-notes in both games' files are corrected.
+`VariantUtils.ConvertTo<B44.Common.Diagnostics.LogSeverity>` and registering with
+`PropertyHint.Enum`. The aliases are already removed from Whispers and the stale
+notes in both games are corrected.
 
-**So the remaining question is purely whether ~80–120 lines justify a
-repository.** With GD0102 removed, extraction buys ~25–40 lines per game and
-eliminates the `NodePathValidator` drift; it costs a repository with its own
-`LICENSE`, CI, release cadence, Godot version pin, an extra float in three
-consumers, and a second publish whenever a change spans both packages.
+#### Hidden `/root` lookups — decided 2026-07-30
 
-**Recommendation: not yet.** Set an explicit trigger instead — create
-`B44.Godot` when a third distinct adapter appears, or when the adapters exceed
-roughly 150 lines in total, whichever comes first. The honest tension is that
-the interim means de-drifting the two `NodePathValidator` copies by hand
-(TicTacHoe's descriptive `InvalidOperationException` is the better of the two),
-which is fork maintenance the organization rule dislikes — but no package owns
-Godot-side code yet, so there is nothing to fix it in without paying the whole
-packaging cost first.
-
-**Open questions to resolve before starting:**
-
-- **Where does it live?** Category A of
-  [Isolation boundaries](#isolation-boundaries--decide-once-applies-to-everything-after)
-  above. Settle that first — it decides this, and no code moves before it does.
-- **Godot version coupling.** Godot-side code churns with engine releases. Pin
-  the supported Godot/GodotSharp range and decide whether `B44.Godot` versions
-  independently of `B44.Common` (it probably must).
-- **Standards profile.** `B44.Godot` cannot take `B44EngineFreeCore=true`.
-  Confirm which analyzer layer it does take, and whether `B44Deterministic`
-  still applies.
+Do **not** build a `B44.Standards` first-party Roslyn analyzer for this yet. It
+would be the package's first — today it ships only third-party analyzers plus
+configuration — and that is a new maintenance surface. Whispers adds a
+repository-local architecture test with an allowlist of approved composition
+files instead (see its `BACKLOG.md`). Reconsider a shared analyzer only after
+the same violation recurs in a second repository, which is the second-occurrence
+rule applied as written.
 
 ### 2. Convert the bootstrap snippets into a real B44 game template
 
@@ -418,12 +440,25 @@ of them.
 this file `ROADMAP.md` → `BACKLOG.md` (via `git mv`, so history follows) and
 updated the one reference in [`README.md`](README.md).
 
-**Remaining, per repository:** create `BACKLOG.md`; fold or link TicTacHoe's
-`docs/expansion-plan.md` and `docs/gap-assessment.md`; leave Whispers'
-`docs/handoffs/` as-is. None of this is blocking — the guidance describes a
-convention, and a repo adopts it the next time someone is in there.
+**All three games adopted `BACKLOG.md` on 2026-07-30**, alongside
+BeforeForeverAfter earlier that day. Notes from doing it:
 
-This applies to games, libraries, and hosted applications alike.
+- Time Machine Clicker already had one, product-focused, with its own
+  `## Planned Work` / `## Known Defects` headings. The architecture entries were
+  **appended** to it rather than replacing it. Those headings are now the
+  convention — the two new files were aligned to them, not the reverse.
+- Whispers had a `BACKLOG.md` that was deliberately deleted in `4eae4b6` as
+  "outdated or empty" (it was three lines). The new one is not a resurrection of
+  removed content.
+- TicTacHoe's `docs/expansion-plan.md` and `docs/gap-assessment.md` are **still
+  unfolded** — the new backlog holds only the architecture workstream. Folding or
+  linking them remains open.
+- Whispers' `docs/handoffs/` left as-is, as intended.
+
+**Remaining:** any B44 consumer without a root `BACKLOG.md` adopts it when next
+worked on, whether game, library, or hosted application. Not blocking — the
+guidance describes a convention, and a repo adopts it the next time someone is in
+there.
 
 ### 5. Make destructive save policy an explicit game choice — DONE 2026-07-29
 
