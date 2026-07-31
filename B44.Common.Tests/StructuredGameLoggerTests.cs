@@ -160,7 +160,7 @@ public class StructuredGameLoggerTests
         Assert.StartsWith("test-op-", duringScope);
         // After the scope is restored the correlation resets; outside log gets a fresh id
         Assert.NotNull(afterScope);
-        Assert.NotEqual(duringScope, afterScope);
+        Assert.NotEqual(duringScope, afterScope, StringComparer.Ordinal);
     }
 
     [Fact]
