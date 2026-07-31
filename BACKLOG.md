@@ -169,7 +169,9 @@ rule applied as written.
 
 ### 2. Convert the bootstrap snippets into a real B44 game template
 
-**Status:** Planned
+**Status:** Planned — **promoted to critical path 2026-07-31.** At four games a
+year this is what makes the cadence real; see
+[P2](#p2-reorganize-for-a-twelve-game-portfolio).
 
 [`/templates`](templates/README.md) is currently a table of files to copy by
 hand (`Directory.Build.props`, `format.yml`, `build-test.yml`, `nuget.config`,
@@ -521,7 +523,10 @@ Whispers does not use `RepositoryFactory` at all.
 
 ### 6. Widen the pre-1.0 version float from `0.<minor>.*` to `0.*`?
 
-**Status:** Planned — proposed 2026-07-29, undecided.
+**Status:** Planned — widening itself is recommended against (evidence below),
+but the notification half is **promoted to critical path 2026-07-31**: twelve
+games multiply every manual boundary crossing by four. See
+[P2](#p2-reorganize-for-a-twelve-game-portfolio).
 
 [`CLAUDE.md`](CLAUDE.md) has pre-1.0 packages consumed at `0.<minor>.*`
 (`0.5.*`), so a minor bump is a boundary each consumer crosses by hand. The
@@ -715,3 +720,137 @@ the finding the wave rests on, decisions made inside the handoff's boundaries,
 behavior preserved for compatibility, development data that may be reset or need
 manual handling, verification added, remaining release risks, and any proposed
 expansion of shared scope with the concrete second consumer that justifies it.
+
+---
+
+### P2. Reorganize for a twelve-game portfolio
+
+**Status:** Planned — structure agreed 2026-07-31, sequencing and two visibility
+questions open. Nothing starts until [B44.Godot's naming question](#the-naming-decision)
+is settled, because it blocks a publish.
+
+**Why now.** Twelve more games are planned at roughly four a year. The current
+shape — one shared repo with two packages, plus `B44.Godot` — was sized for
+three games. Two things change at twelve: shared game-domain code becomes
+genuinely reusable rather than speculative, and *coordination* becomes the
+binding constraint rather than code reuse.
+
+#### The organizing principle
+
+**One repository per boundary that cannot be crossed — not one per package.**
+Exactly three things force a repository split:
+
+1. **Engine coupling** — the engine-free MSBuild guard must stay literally true.
+2. **Licence obligation** — see the refinement below.
+3. **Visibility** — public portfolio surface versus private work.
+
+Package count forces nothing. `B44.Common` and `B44.Standards` already ship two
+packages from one repository, lockstep from a single tag. That is the lever that
+keeps twelve games tractable.
+
+#### Target structure
+
+| Repository | Ships | Split reason |
+|---|---|---|
+| `B44.Standards` | `B44.Standards` | Public — portfolio surface |
+| `B44.Common` | `B44.Common` | Engine-free mechanisms |
+| `B44.Games` | `B44.Games.Inventory`, `B44.Games.Dungeons` | Engine-free game-domain |
+| `B44.Godot` | `B44.Godot`, `B44.Godot.Inventory` | Engine-coupled |
+| `B44.Vendored` | per-upstream packages | Obligation-bearing third-party |
+
+Dependency direction: `B44.Common` → `B44.Games.*` → games, with `B44.Godot`
+adapting each engine-free layer and `B44.Vendored` consumed directly.
+
+**The trade-off, stated plainly.** Lockstep within a repository means
+`B44.Games.Dungeons` takes version bumps it did not need when `Inventory`
+changes. That buys five trusted-publishing policies instead of nine, five
+`NUGET_USER` secrets, five CI pins, and four package floats per game instead of
+eight — times twelve games. At three games the split would have been right; at
+twelve the coordination cost dominates.
+
+#### The naming decision
+
+Keep **`B44.Godot`**, not `B44.Games.Godot`. Read the scheme as
+`B44.<layer>.<domain>`: `B44.Godot` is the engine layer, `B44.Godot.Inventory`
+is a domain within it. Putting the engine *under* a games layer misnames the
+smoke harness, which is generic engine plumbing rather than game-domain code.
+
+Practical consequence: no rename, so no stranded package ID, and the pending
+`B44.Godot` publish is unblocked the moment its trusted-publishing policy exists.
+
+#### Rule refinement — obligation, not origin
+
+The isolation rule currently keys off "third-party code." That is the wrong
+test. **The test is whether the material carries an obligation.**
+
+- **MIT/BSD/Apache** — attribution and licence text travel with the binary to
+  every consumer. Obligation-bearing, so it cannot sit inside an all-rights-
+  reserved package without contradicting that package's own terms. Isolated
+  repository, own `LICENSE` and `THIRD-PARTY-NOTICES.md`.
+- **CC0** — a public-domain dedication. Nothing to carry, nothing to
+  contradict. May live in a normal repository. Record provenance anyway —
+  source, date, what was taken — for the audit trail and for storefront
+  disclosure, not because a licence demands it.
+
+Fold this wording into `B44.Organization.md` when the program starts.
+
+#### Vendored repository shape
+
+Start with **one** `B44.Vendored` repository, one directory per upstream, one
+`THIRD-PARTY-NOTICES.md` listing each. Split to per-upstream repositories only
+when an upstream needs its own release cadence. Per-upstream is cleaner in
+theory but pays the repo + policy + secret + pin cycle per upstream, and licence
+notices are small enough to bundle. This answers one of the open mechanics in
+[Isolation boundaries](#isolation-boundaries--decided).
+
+#### Extraction scope
+
+The second-occurrence rule is now satisfied by planned consumers rather than
+existing ones — "demonstrably will within the current effort." Verified
+2026-07-31 that **no** inventory or dungeon code exists in TicTacHoe or Time
+Machine Clicker today, so this rests entirely on the twelve-game plan. If that
+plan changes, revisit before extracting.
+
+- Whispers' engine-free inventory → `B44.Games.Inventory`
+- Whispers' multi-floor dungeon continuity → `B44.Games.Dungeons`
+- The Godot-side inventory layer → `B44.Godot.Inventory`, after the engine-free
+  core is stable
+
+**Sequencing constraint:** do not extract Whispers' inventory or dungeon code
+until its startup-readiness and `/root` work land and P1 Wave 2 defines the
+lifecycle seams. Those are the same files. Extracting first means extracting to
+seams that are about to move.
+
+#### These two entries are now critical path
+
+At twelve games the bottleneck is repo setup and version coordination, so two
+entries previously treated as low-urgency become the things that actually buy
+the cadence:
+
+- **[Entry 2, the game template](#2-convert-the-bootstrap-snippets-into-a-real-b44-game-template).**
+  A new game currently costs: repository, `Directory.Build.props`, `CLAUDE.md`
+  plus guidance sync, ratchet baseline, `BACKLOG.md`, CI workflow with a pinned
+  SHA, package floats, `.gitignore`, solution. Twelve games assembled from a
+  checklist is twelve chances to drift.
+- **[Entry 6, release notification](#6-widen-the-pre-10-version-float-from-0minor-to-0).**
+  One enforcement release meant three manual boundary crossings on 2026-07-29;
+  at twelve games that is twelve, per release. Adding packages without solving
+  this makes the cadence worse, not better.
+
+#### Open questions
+
+- **Does `B44.Common`'s repository go private?** Recommendation: no. It ships
+  `EmbedAllSources` and `DebugType=embedded`, so the full source is inside the
+  `.nupkg` regardless — a private repo would hide the history and issues while
+  publishing identical source. The choice is really public-source or
+  private-package-plus-credentials, with nothing in between. Nothing in the
+  repository is sensitive, and its decision records are the second-strongest
+  portfolio artifact after `B44.Standards`.
+- **How does `B44.Standards` split out?** Agreed in principle. It currently
+  shares a repository and a release tag with `B44.Common`; separating them costs
+  a repository, a trusted-publishing policy, a `NUGET_USER` secret, a CI pin,
+  and its own publish cycle.
+- **Do any packages need to be genuinely private?** If so, GitHub Packages is
+  the free option — and knowingly re-adopts the PAT removed in `ee6f9ae`,
+  which moved to nuget.org precisely because GitHub Packages' NuGet feed
+  authenticates even public reads.
