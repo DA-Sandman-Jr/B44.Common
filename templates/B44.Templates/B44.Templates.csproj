@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>B44.Templates</PackageId>
+    <Version>0.8.4</Version>
+    <Authors>DA-Sandman-Jr</Authors>
+    <Company>B44</Company>
+    <Description>`dotnet new` templates for B44 repositories. Scaffolds a game repository with an engine-free Core, the Godot guard, B44.Standards policy, agent-guidance sync, and the source-size ratchet already wired.</Description>
+    <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Copyright>Copyright (c) 2026 David Sanders (B44). All rights reserved.</Copyright>
+
+    <PackageType>Template</PackageType>
+    <TargetFramework>net8.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- Template content includes .gitignore and .template.config, both of
+         which NuGet excludes by default. Without this the package ships a
+         template that cannot be instantiated. -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <!-- Not a code project: no analyzers, no docs, nothing to enforce. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**" />
+    <Compile Remove="**\*" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

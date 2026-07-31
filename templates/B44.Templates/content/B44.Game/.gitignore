@@ -1,0 +1,19 @@
+# --- Godot ---
+.godot/
+*.translation
+data_*/
+mono_crash.*.json
+
+# NOTE: *.uid is deliberately NOT ignored. Godot writes a .uid beside every
+# script as a stable identifier; they must be committed, or references break as
+# soon as the project is cloned onto another machine — including a CI runner
+# doing a fresh checkout.
+
+# --- .NET ---
+bin/
+obj/
+TestResults/
+*.user
+
+# --- Local agent settings (shared guidance is tracked) ---
+.claude/settings.local.json

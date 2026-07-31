@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>B44_TARGET_FRAMEWORK</TargetFramework>
+    <RootNamespace>GameName</RootNamespace>
+    <!-- The engine-free invariant, enforced by B44.Standards: banned Godot
+         symbols plus a resolved-reference guard. This is the architecture
+         boundary, not a preference. -->
+    <B44EngineFreeCore>true</B44EngineFreeCore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="B44.Common" Version="B44_COMMON_VERSION" />
+  </ItemGroup>
+</Project>

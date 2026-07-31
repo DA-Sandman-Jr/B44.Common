@@ -169,9 +169,39 @@ rule applied as written.
 
 ### 2. Convert the bootstrap snippets into a real B44 game template
 
-**Status:** Planned — **promoted to critical path 2026-07-31.** At four games a
-year this is what makes the cadence real; see
-[P2](#p2-reorganize-for-a-twelve-game-portfolio).
+**Status:** **Done 2026-07-31.** Ships as the `B44.Templates` package from this
+repository. Drop this entry at the next release.
+
+```bash
+dotnet new install B44.Templates
+dotnet new b44game -n MyGame
+```
+
+**Open question answered — separate package, not inside `B44.Standards`.** The
+consumption models differ completely: `B44.Standards` is a `PackageReference`
+every project restores on every build, while templates are installed once per
+machine. Bundling would make every game download template content it never uses.
+
+**Verified end to end**, not just packed: generated a repository, restored,
+built clean with zero warnings, ran its test, confirmed guidance synchronization
+produced `AGENTS.md` and `.b44/`, confirmed the ratchet regenerates, and
+confirmed the Godot guard actually fires by adding a `GodotSharp` reference to
+the test project and watching the build fail.
+
+**Two defects that only surfaced by running it:**
+
+- `sourceName` was `B44Game`, which collided with B44.Standards' own
+  `B44GameCoreProject` property — substitution renamed the property itself, so
+  the guidance target failed with "requires B44GameCoreProject". The placeholder
+  is now `GameName`, which shares no prefix with any B44 identifier. Worth
+  remembering for any future template: **a `sourceName` that prefixes a real
+  property name silently rewrites that property.**
+- No solution file, so `dotnet restore` at the repository root failed outright.
+  The template now ships a `.slnx`.
+
+`NoDefaultExcludes` is required in the package project: NuGet excludes
+`.gitignore` and `.template.config` by default, which would ship a template that
+cannot be instantiated.
 
 [`/templates`](templates/README.md) is currently a table of files to copy by
 hand (`Directory.Build.props`, `format.yml`, `build-test.yml`, `nuget.config`,
