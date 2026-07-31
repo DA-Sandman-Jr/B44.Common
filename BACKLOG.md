@@ -521,6 +521,45 @@ pre-release, but it should be typed out rather than inherited.
 and Time Machine Clicker's `GameStateRepositoryFactory` are the two call sites.
 Whispers does not use `RepositoryFactory` at all.
 
+### 7. Standardize committing Godot `.uid` files
+
+**Status:** Planned. Low effort, and it fixes a latent bug rather than a style
+inconsistency.
+
+Godot 4.4+ writes a `.uid` file beside every script, giving it a stable
+identifier so scenes can reference it across moves and renames. The engine's
+guidance is explicit: *"Make sure to commit all `.uid` files into version
+control (and do not add them to ignore-lists like `.gitignore`)."* Forgetting
+works locally and breaks **as soon as the project is cloned on another device.**
+
+**Surveyed 2026-07-31:**
+
+| Repo | `.gitignore` | On disk | Tracked |
+|---|---|---|---|
+| TicTacHoe | no rule | 176 | 176 — correct |
+| Whispers | `*.uid` at line 28 | 559 | 0 |
+| Time Machine Clicker | `*.uid` at line 11 | 80 | 0 |
+
+**This is not theoretical.** The Godot composition smoke workflow does a fresh
+checkout on a CI runner — precisely the "cloned on another device" case. Whispers'
+pending smoke adoption could fail on broken UID references, and the failure would
+look like a harness defect rather than a version-control one.
+
+**Work:**
+
+- Add the rule to `B44.Standards/guidance/B44.Organization.md` so it reaches every
+  repo, then release. Guidance-only, so a patch.
+- Whispers and Time Machine Clicker: drop the `*.uid` ignore rule and commit the
+  existing files. Expect large, one-time, mechanical diffs — 559 and 80 files.
+- Ensure [entry 2's template](#2-convert-the-bootstrap-snippets-into-a-real-b44-game-template)
+  never seeds a `*.uid` ignore rule, or every future game repeats this.
+
+**Related known engine behavior:** Godot generates `.uid` files for *all* C#
+scripts under the project directory, including engine-free `Core` and test
+projects that Godot never loads (godotengine/godot#103461). That is why
+TicTacHoe tracks UIDs for `TicTacHoe.Core` and `TicTacHoe.Tests`. Expected, not
+a misconfiguration — do not "fix" it by ignoring them.
+
 ### 6. Widen the pre-1.0 version float from `0.<minor>.*` to `0.*`?
 
 **Status:** Planned — widening itself is recommended against (evidence below),
