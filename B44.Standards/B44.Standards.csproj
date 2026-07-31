@@ -27,7 +27,7 @@
   <ItemGroup>
     <!-- Plain dependencies (NOT PrivateAssets) so consumers get the analyzers
          transitively — package props must not manufacture PackageReferences. -->
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.123" />
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.137" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" />
   </ItemGroup>
 
