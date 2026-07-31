@@ -663,7 +663,16 @@ until a consumer restore failed with "nearest version 0.6.0". Widening the float
 would not have helped with that at all; it is a notification problem wearing a
 versioning problem's clothes.
 
-**Candidate fix, untested:** Dependabot on the NuGet ecosystem in each consumer,
+**Experiment running as of 2026-07-31.** `.github/dependabot.yml` is now in this
+repository — deliberately the *package producer* first rather than a consumer,
+because if Dependabot cannot even track ordinary analyzer and test dependencies
+here, it certainly will not handle a `0.8.*` float in a game. Weekly, grouped by
+ecosystem, PR-based so a human still reviews and merges. Check back after the
+first Monday: if PRs appear, roll it out to the games; if nothing fires, the
+wildcard limitation below is confirmed and the fallback applies.
+
+**Original candidate, still untested against wildcard floats:** Dependabot on
+the NuGet ecosystem in each consumer,
 which opens a PR when a new minor falls outside the repo's current float. The
 deliberate gate survives — a human still reviews and merges — while the "did I
 miss a release" burden goes away. The caveat is real: Dependabot's NuGet support
