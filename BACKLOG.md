@@ -663,7 +663,31 @@ until a consumer restore failed with "nearest version 0.6.0". Widening the float
 would not have helped with that at all; it is a notification problem wearing a
 versioning problem's clothes.
 
-**Experiment running as of 2026-07-31.** `.github/dependabot.yml` is now in this
+#### Experiment result — Dependabot works, 2026-07-31
+
+It fired within the hour and answered the open question definitively.
+
+- **It handles wildcard floats, and preserves them.** PR #19 bumped a stale
+  `B44.Standards` reference `0.5.*` → `0.8.*` — it did **not** pin to `0.8.4`.
+  The compatibility-bounded float style survives, which was the specific worry.
+- **It found a real stale file nobody had noticed**: the loose snippet at
+  `templates/Directory.Build.props` was three minors behind and would have
+  misled anyone retrofitting an existing repository. Merged.
+- **It also demonstrated why the gate matters.** PR #18 bumped
+  Meziantou.Analyzer 3.0.123 → 3.0.137 and **failed CI**: the newer analyzer
+  raises MA0002 on `StructuredGameLoggerTests.cs:163`. Under
+  `TreatWarningsAsErrors` that is a build break. An analyzer bump is
+  enforcement-expanding by nature, so this is the review step working exactly as
+  intended — the PR stays open until someone fixes the call site or tunes the
+  rule, and nothing auto-merges.
+
+**Roll it out to the games**, with one caveat learned here: group analyzer
+updates separately and expect them to fail until the diagnostics they add are
+addressed. That is a feature, not friction.
+
+**Superseded plan below, kept for the reasoning.**
+
+**Experiment was running as of 2026-07-31.** `.github/dependabot.yml` is now in this
 repository — deliberately the *package producer* first rather than a consumer,
 because if Dependabot cannot even track ordinary analyzer and test dependencies
 here, it certainly will not handle a `0.8.*` float in a game. Weekly, grouped by
