@@ -214,14 +214,27 @@ repository once and must not become a copied policy fork. Anything in the
 template that would need to change when policy changes is a sign it belongs in
 `B44.Standards` instead.
 
-**Open questions to resolve before starting:**
+**All three open questions are now answered:**
 
-- Ship the template inside `B44.Standards`, or as a separate
-  `B44.Templates` package?
-- How much does it scaffold — repository configuration only, or also the
-  engine-free Core project and test project with the Godot guard wired up?
-- What is the placeholder substitution surface (today's `GAME` placeholders in
-  `build-test.yml`)?
+- **Separate `B44.Templates` package**, not inside `B44.Standards` — the
+  consumption models differ completely.
+- **Scaffolds the whole repository**, not just configuration: engine-free Core,
+  test project with the Godot guard, ratchet baseline, `BACKLOG.md`, CI, and a
+  placeholder type and test that prove the wiring before any game code exists.
+- **Substitution surface** is `GameName` plus four parameters
+  (`--standardsVersion`, `--commonVersion`, `--targetFramework`, `--ciRef`).
+  The old `GAME` placeholders are gone.
+
+**Where it lives — decided 2026-07-31.** It ships from this repository today,
+as a third package alongside `B44.Common` and `B44.Standards`, consistent with
+P2's rule that only engine coupling, licence obligation, and visibility force a
+repository split. **When `B44.Standards` splits out, `B44.Templates` goes with
+it.** The template seeds `B44AgentSync*`, `B44Ratchet*`, `B44EngineFreeCore`,
+and float defaults for both packages — every one a B44.Standards concern. Add or
+rename a Standards property and the template must follow in the same change;
+across repositories that is cross-repo coordination every time. Same reasoning
+that put the Godot smoke workflow with its harness: things that change together
+live together.
 
 ### 3. Promote the source-size ratchet gate into `B44.Standards`
 
@@ -821,7 +834,7 @@ keeps twelve games tractable.
 
 | Repository | Ships | Split reason |
 |---|---|---|
-| `B44.Standards` | `B44.Standards` | Public — portfolio surface |
+| `B44.Standards` | `B44.Standards`, `B44.Templates` | Public — portfolio surface |
 | `B44.Common` | `B44.Common` | Engine-free mechanisms |
 | `B44.Games` | `B44.Games.Inventory`, `B44.Games.Dungeons` | Engine-free game-domain |
 | `B44.Godot` | `B44.Godot`, `B44.Godot.Inventory` | Engine-coupled |
@@ -829,6 +842,12 @@ keeps twelve games tractable.
 
 Dependency direction: `B44.Common` → `B44.Games.*` → games, with `B44.Godot`
 adapting each engine-free layer and `B44.Vendored` consumed directly.
+
+`B44.Templates` ships from the `B44.Common` repository today and moves to
+`B44.Standards` when that splits out — see
+[entry 2](#2-convert-the-bootstrap-snippets-into-a-real-b44-game-template) for
+why. Listed above at its destination rather than its current address, since this
+table describes the target structure.
 
 **The trade-off, stated plainly.** Lockstep within a repository means
 `B44.Games.Dungeons` takes version bumps it did not need when `Inventory`
