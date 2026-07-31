@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>B44_TARGET_FRAMEWORK</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- Required on current SDKs: without this, `dotnet test` restores and
+         exits without running any xunit.v3 tests. -->
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameName.Core\GameName.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Mechanical proof that the suite stays engine-independent. A symbol
+       analyzer cannot reject an unused dependency, so the reference graph is
+       checked directly. -->
+  <Target Name="PreventGodotDependencies" BeforeTargets="ResolveReferences">
+    <Error Condition="'@(ProjectReference->WithMetadataValue('Filename','GameName'))' != ''"
+           Text="GameName.Tests must remain core-only. Do not reference GameName.csproj; move testable logic into GameName.Core instead." />
+    <Error Condition="'@(PackageReference->WithMetadataValue('Identity','Godot.NET.Sdk'))' != ''"
+           Text="GameName.Tests must not reference Godot packages." />
+    <Error Condition="'@(PackageReference->WithMetadataValue('Identity','GodotSharp'))' != ''"
+           Text="GameName.Tests must not reference Godot packages." />
+    <Error Condition="'@(Reference->WithMetadataValue('Identity','GodotSharp'))' != ''"
+           Text="GameName.Tests must not reference Godot assemblies." />
+  </Target>
+</Project>
