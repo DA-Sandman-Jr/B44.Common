@@ -32,6 +32,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The template ships its own CLAUDE.md as content. Without this the
+         guidance sync walks into it and generates an AGENTS.md beside it,
+         shipping a stale mirror inside the template package — the new
+         repository generates its own on first build. -->
+    <B44AgentSyncExclude Include="templates" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Test projects exceed the ratchet by doctrine; templates are copied
          examples, not this repository's production source. -->
     <B44RatchetExclude Include="B44.Common.Tests" />
