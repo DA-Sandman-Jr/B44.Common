@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>B44.Templates</PackageId>
-    <Version>0.8.6</Version>
+    <Version>0.8.7</Version>
     <Authors>DA-Sandman-Jr</Authors>
     <Company>B44 Labs</Company>
     <Description>`dotnet new` templates for B44 repositories. Scaffolds a game repository with an engine-free Core, the Godot guard, B44.Standards policy, agent-guidance sync, and the source-size ratchet already wired.</Description>
