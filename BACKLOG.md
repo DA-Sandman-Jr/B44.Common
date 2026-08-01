@@ -71,11 +71,21 @@ tree for Category B.
 
 ### 1. Create `B44.Godot`: composition smoke testing, then the shared adapters
 
-**Status:** Planned — **decided 2026-07-30 to build it.** This entry previously
-recommended *not yet*, with a trigger of "a third distinct adapter, or ~150
-lines." The Godot composition smoke harness is that third adapter, and it
-carries the strongest shared-behavior argument of the three, so the trigger is
-satisfied.
+**Status:** **1A done 2026-08-01.** The repository exists, publishes `B44.Godot`
+to nuget.org (0.3.0), and the composition smoke harness runs in **two** games in
+two different shapes: Time Machine Clicker probes a composition-root autoload,
+TicTacHoe has none and so composes its main menu itself. Whispers is the third
+consumer and is blocked on its own teardown crash.
+
+**1B — migrating the shared engine-side adapters — has not started** and is
+tracked as
+[B44.Godot backlog entry 2](https://github.com/DA-Sandman-Jr/B44.Godot/blob/main/BACKLOG.md).
+It was deliberately not bundled into standing the repository up.
+
+Getting 1A working cost two package defects and six workflow defects, all of
+which failed silently. The durable rules are recorded in B44.Godot's `CLAUDE.md`;
+the one worth repeating here is that Godot problems are diagnosed by reading the
+generated sources, not by iterating in CI.
 
 #### Why the CI lives here and not in `B44.Common`
 
@@ -424,12 +434,16 @@ with the gate.
 
 ### 4. Standardize a `BACKLOG.md` across B44 repos
 
-**Status:** In progress — decided and implemented in this repository 2026-07-29
-(guidance bullet added to `B44.Organization.md`, `ROADMAP.md` renamed,
-`README.md` updated). Remaining: every B44 consumer without a root
-`BACKLOG.md` adopts it when next worked on, whether it is a game, library, or
-hosted application. BeforeForeverAfter adopted it 2026-07-30 alongside its
-private-package restore follow-up.
+**Status:** **Done 2026-08-01** for every repository currently in play:
+`B44.Common`, `B44.Standards` (same repo), `B44.Godot`, all three games, and
+BeforeForeverAfter. The convention is in `B44.Organization.md`, so new
+repositories inherit it rather than needing an entry here.
+
+Two things the convention earned in practice, worth keeping: defects live in
+their own section so they stay distinct from planned work, and a superseded
+diagnosis is **rewritten with the correction visible** rather than deleted —
+three wrong diagnoses were recorded and corrected this way during the smoke-test
+work, and the corrections are more useful than the original entries were.
 
 Every B44 repository accumulates "agreed but not started" work and "known broken,
 not yet fixed" defects. Neither has a standard home, so both land wherever the
@@ -566,8 +580,11 @@ Whispers does not use `RepositoryFactory` at all.
 
 ### 7. Standardize committing Godot `.uid` files
 
-**Status:** Planned. Low effort, and it fixes a latent bug rather than a style
-inconsistency.
+**Status:** In progress — **two of three games done.** TicTacHoe was already
+correct (176 tracked) and Whispers was remediated (560 tracked, ignore rule
+removed). **Time Machine Clicker is the one repository left**: `.gitignore` line
+11 still ignores `*.uid` and 80 files are untracked. Low effort, and it fixes a
+latent bug rather than a style inconsistency.
 
 Godot 4.4+ writes a `.uid` file beside every script, giving it a stable
 identifier so scenes can reference it across moves and renames. The engine's
