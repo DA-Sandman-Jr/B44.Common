@@ -580,11 +580,21 @@ Whispers does not use `RepositoryFactory` at all.
 
 ### 7. Standardize committing Godot `.uid` files
 
-**Status:** In progress — **two of three games done.** TicTacHoe was already
-correct (176 tracked) and Whispers was remediated (560 tracked, ignore rule
-removed). **Time Machine Clicker is the one repository left**: `.gitignore` line
-11 still ignores `*.uid` and 80 files are untracked. Low effort, and it fixes a
-latent bug rather than a style inconsistency.
+**Status:** **Done 2026-08-01.** All three games track their UID files with no
+ignore rule: TicTacHoe 176, Whispers 560 (remediated), Time Machine Clicker 80.
+The standard itself lives in the organization guidance, so new repositories
+inherit it.
+
+An earlier revision of this entry claimed Time Machine Clicker was still
+outstanding. That was wrong — it had already been remediated, and the claim came
+from misreading a verification command's output rather than from the repository.
+Recorded because a backlog that misstates what is done is worse than one that is
+merely incomplete: it sends someone to do work that does not exist.
+
+Loose end, not worth its own entry: a `.cs` file created without opening Godot
+has no `.uid` until the editor next generates one. Four such files exist across
+Whispers and Time Machine Clicker from this session's work. They will pick theirs
+up on the next editor open and should be committed then.
 
 Godot 4.4+ writes a `.uid` file beside every script, giving it a stable
 identifier so scenes can reference it across moves and renames. The engine's
