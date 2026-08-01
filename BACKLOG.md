@@ -605,7 +605,8 @@ a misconfiguration — do not "fix" it by ignoring them.
 
 ### 8. Move the Meziantou 3.0.137 bump to 0.9.0
 
-**Status:** Planned. **0.8.7 reverted it; do not put it back on the 0.8 line.**
+**Status:** Done 2026-08-01 — shipped as **0.9.0**, the minor it always belonged
+in, and adopted by all three games in the same pass.
 
 **What went wrong, 2026-08-01.** The analyzer bump shipped as **0.8.6, a patch**.
 Patches flow automatically through every consumer's `0.8.*` float, so a newer
@@ -625,9 +626,10 @@ enforcement consumers already had, so their builds go green without anyone
 touching a version. The `StringComparer.Ordinal` fix stays — it is a correct
 improvement independent of the analyzer version.
 
-**The bump belongs in 0.9.0**, published when someone is ready to absorb ~380
-call-site fixes deliberately. There is no value in publishing 0.9.0 before then;
-a minor nobody can adopt is just a number.
+**The bump belonged in 0.9.0**, published when someone was ready to absorb the
+call-site fixes deliberately — which is how it finally shipped. `B44.Common`
+itself needed no changes: the `StringComparer.Ordinal` work kept from the 0.8.7
+revert already covered it.
 
 **Worth keeping as the general lesson:** the patch/minor distinction is not
 bookkeeping. It is the entire mechanism by which a consumer decides *when* to
