@@ -603,6 +603,37 @@ projects that Godot never loads (godotengine/godot#103461). That is why
 TicTacHoe tracks UIDs for `TicTacHoe.Core` and `TicTacHoe.Tests`. Expected, not
 a misconfiguration — do not "fix" it by ignoring them.
 
+### 8. Move the Meziantou 3.0.137 bump to 0.9.0
+
+**Status:** Planned. **0.8.7 reverted it; do not put it back on the 0.8 line.**
+
+**What went wrong, 2026-08-01.** The analyzer bump shipped as **0.8.6, a patch**.
+Patches flow automatically through every consumer's `0.8.*` float, so a newer
+analyzer reached all three games without anyone crossing a boundary, and broke
+their builds: **316 MA0002 diagnostics in Whispers, 44 in Time Machine Clicker,
+20 in TicTacHoe** — 380 in total, all build errors under
+`TreatWarningsAsErrors`.
+
+This violated a rule this repository publishes and had already applied
+correctly twice the same week: *enforcement-expanding changes bump the minor
+version and never enter an existing patch float.* An analyzer upgrade is
+enforcement-expanding by definition — it adds diagnostics. The Dependabot PR
+that proposed it even failed CI here first, which was the warning.
+
+**0.8.7 reverts Meziantou to 3.0.123**, restoring the `0.8` line to the
+enforcement consumers already had, so their builds go green without anyone
+touching a version. The `StringComparer.Ordinal` fix stays — it is a correct
+improvement independent of the analyzer version.
+
+**The bump belongs in 0.9.0**, published when someone is ready to absorb ~380
+call-site fixes deliberately. There is no value in publishing 0.9.0 before then;
+a minor nobody can adopt is just a number.
+
+**Worth keeping as the general lesson:** the patch/minor distinction is not
+bookkeeping. It is the entire mechanism by which a consumer decides *when* to
+accept a change that can break them, and a single mis-numbered release bypassed
+it for three repositories at once.
+
 ### 6. Widen the pre-1.0 version float from `0.<minor>.*` to `0.*`?
 
 **Status:** Planned — widening itself is recommended against (evidence below),
