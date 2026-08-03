@@ -10,16 +10,7 @@ Status values: **Planned**, **In progress**, **Blocked**, and **Deferred**.
 
 ## Planned Work
 
-### 1. Remove the deprecated `SourceSizeRatchet` API
-
-**Status:** **In progress for 0.11.0.** The build-time
-`B44VerifyRatchet` / `B44WriteRatchetBaseline` targets in `B44.Standards`
-replaced `B44.Common.Quality.SourceSizeRatchet` in 0.8.1. All current games use
-the build target and have no remaining source reference to the deprecated type.
-
-The type and its compatibility tests are removed together in the 0.11.0
-candidate. Measure that candidate against every consumer before publishing,
-then advance each `B44.Common` compatibility boundary deliberately.
+No B44.Common-local planned work is currently queued.
 
 ---
 
