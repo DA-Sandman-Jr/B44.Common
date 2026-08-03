@@ -45,10 +45,13 @@ Planned waves:
 
 ### P2. Scale shared packages for a twelve-game portfolio
 
-**Status:** **In progress.** `B44.Godot` is independently published;
-`B44.Standards` plus `B44.Templates` moved to their own public repository and
-published successfully as 0.10.1; and every reusable-CI consumer now calls the
-reviewed workflow in `B44.Standards`.
+**Status:** **Deferred** until a second-game extraction creates a concrete
+shared boundary.
+
+The portfolio foundation is in place: `B44.Godot` is independently published;
+`B44.Standards` and `B44.Templates` are maintained in their own public
+repository; current games consume the shared engine adapters; and reusable-CI
+consumers call the reviewed workflow in `B44.Standards`.
 
 Remaining sequence:
 
@@ -56,12 +59,6 @@ Remaining sequence:
    package count alone does not justify a repository.
 2. Extract shared inventory and dungeon mechanics only after stable lifecycle
    seams exist in their current consumers.
-
-### External: B44.Godot shared adapters
-
-**Status:** **Planned in B44.Godot.** Composition smoke testing is complete and
-used by two games. Further adapter migration is tracked in
-[B44.Godot's backlog](https://github.com/DA-Sandman-Jr/B44.Godot/blob/main/BACKLOG.md).
 
 ---
 
