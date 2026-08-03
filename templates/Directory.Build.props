@@ -48,8 +48,12 @@
     <!-- Internal packages use compatibility-bounded floats in every consumer,
          including production. B44.Standards is pre-1.0, so the minor version
          is the breaking-change boundary. -->
+    <!-- Lags the version this repository is publishing, by necessity: the
+         templates project restores this package, so it can only reference a
+         version that already exists on nuget.org. Bump it after the release
+         tag publishes, not in the same commit. -->
     <PackageReference Include="B44.Standards"
-                      Version="0.10.*"
+                      Version="0.9.*"
                       PrivateAssets="all" />
   </ItemGroup>
 </Project>
