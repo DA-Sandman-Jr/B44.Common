@@ -53,7 +53,7 @@
          version that already exists on nuget.org. Bump it after the release
          tag publishes, not in the same commit. -->
     <PackageReference Include="B44.Standards"
-                      Version="0.9.*"
+                      Version="0.10.*"
                       PrivateAssets="all" />
   </ItemGroup>
 </Project>
