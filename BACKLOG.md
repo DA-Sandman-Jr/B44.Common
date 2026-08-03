@@ -632,7 +632,7 @@ a misconfiguration — do not "fix" it by ignoring them.
 
 ### 8. Move the Meziantou 3.0.137 bump to 0.9.0
 
-**Status:** Done 2026-08-01 — shipped as **0.9.0**, the minor it always belonged
+**Status:** Done — shipped as **0.9.0**, the minor it always belonged
 in, and adopted by all three games in the same pass.
 
 **What went wrong, 2026-08-01.** The analyzer bump shipped as **0.8.6, a patch**.
@@ -657,6 +657,20 @@ improvement independent of the analyzer version.
 call-site fixes deliberately — which is how it finally shipped. `B44.Common`
 itself needed no changes: the `StringComparer.Ordinal` work kept from the 0.8.7
 revert already covered it.
+
+**Sequel, 2026-08-03.** Dependabot proposed 3.0.138 and it shipped as **0.10.0**
+the same day — but measured first this time. Adding the candidate as a temporary
+direct reference in each game and rebuilding showed **zero** new diagnostics
+across all three, so the migration cost nothing. That measurement is now in
+`B44.Tooling.md`: a clean build in this repository proves nothing about the
+games, because they enable stricter rules than the repository that ships the
+analyzer.
+
+The same pass found this repository had been dogfooding **3.0.123** in
+`Directory.Build.props` while publishing 3.0.137, so 0.9.0 was never built
+against its own rules here. Harmless in the event, and exactly the kind of drift
+that makes a green local build misleading. Both references are pinned together
+now, with a comment saying why.
 
 **Worth keeping as the general lesson:** the patch/minor distinction is not
 bookkeeping. It is the entire mechanism by which a consumer decides *when* to

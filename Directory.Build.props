@@ -54,7 +54,12 @@
   <ItemGroup Condition="'$(MSBuildProjectName)' != 'B44.Standards'">
     <!-- The standards csproj declares these as plain package dependencies;
          everywhere else they're local-only analyzers. -->
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.123" PrivateAssets="all" />
+    <!-- Keep this version identical to B44.Standards.csproj. It drifted to
+         3.0.123 while the package shipped 3.0.137, so this repository was
+         dogfooding a weaker analyzer set than it published and 0.9.0 went out
+         without being built against its own rules here. The games caught
+         nothing because they are stricter, not because it was safe. -->
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.138" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
