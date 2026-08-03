@@ -1,65 +1,34 @@
 <Project>
   <PropertyGroup>
-    <!-- B44.Common dogfoods the opt-in agent-guidance synchronization shipped
-         by B44.Standards. The anchor is repository-relative: no clone- or
-         machine-specific absolute path is persisted. -->
+    <!-- B44.Common consumes the opt-in agent-guidance synchronization shipped
+         by B44.Standards. The anchor remains repository-relative. -->
     <B44AgentSyncEnabled>true</B44AgentSyncEnabled>
     <B44AgentGuidanceProfile>Organization</B44AgentGuidanceProfile>
     <B44AgentRepositoryRoot>$(MSBuildThisFileDirectory)</B44AgentRepositoryRoot>
     <B44AgentSyncProject>$(MSBuildThisFileDirectory)B44.Common\B44.Common.csproj</B44AgentSyncProject>
 
-    <!-- Dogfood the source-size ratchet too. Same anchor project, so both
-         repository-wide checks run exactly once per build. -->
+    <!-- Run the source-size ratchet once from the same anchor project. -->
     <B44RatchetEnabled>true</B44RatchetEnabled>
     <B44RatchetProject>$(MSBuildThisFileDirectory)B44.Common\B44.Common.csproj</B44RatchetProject>
     <B44RatchetRepositoryRoot>$(MSBuildThisFileDirectory)</B44RatchetRepositoryRoot>
     <B44RatchetBaseline>$(MSBuildThisFileDirectory)ratchet-baseline.txt</B44RatchetBaseline>
 
     <Nullable>enable</Nullable>
-    <!-- Shared package and policy builds must never normalize a new warning
-         into the baseline. Consumer repositories opt into this independently. -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Surface editorconfig style/naming violations at build time so CI and
-         local `dotnet build` catch drift instead of waiting for `dotnet format`. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <!-- Required to make IDE0005 (remove unnecessary usings) fire at build
-         time. Also ships the XML docs in the package. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Suppress "missing XML comment". We generate doc files to enable
-         IDE0005 and to ship docs for the members we do document, not to
-         document every public member. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The template ships its own CLAUDE.md as content. Without this the
-         guidance sync walks into it and generates an AGENTS.md beside it,
-         shipping a stale mirror inside the template package — the new
-         repository generates its own on first build. -->
-    <B44AgentSyncExclude Include="templates" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Test projects exceed the ratchet by doctrine; templates are copied
-         examples, not this repository's production source. -->
+    <!-- Test projects exceed the ratchet by doctrine. -->
     <B44RatchetExclude Include="B44.Common.Tests" />
-    <B44RatchetExclude Include="B44.Standards.AgentGuidance.Tests" />
-    <B44RatchetExclude Include="templates" />
     <B44RatchetExclude Include="artifacts" />
   </ItemGroup>
 
-  <!-- Dogfood the B44.Standards policy this repo publishes. Games consume the
-       same files via the package's buildTransitive assets. -->
-  <Import Project="$(MSBuildThisFileDirectory)B44.Standards/buildTransitive/B44.Standards.props" />
-  <ItemGroup Condition="'$(MSBuildProjectName)' != 'B44.Standards'">
-    <!-- The standards csproj declares these as plain package dependencies;
-         everywhere else they're local-only analyzers. -->
-    <!-- Keep this version identical to B44.Standards.csproj. It drifted to
-         3.0.123 while the package shipped 3.0.137, so this repository was
-         dogfooding a weaker analyzer set than it published and 0.9.0 went out
-         without being built against its own rules here. The games caught
-         nothing because they are stricter, not because it was safe. -->
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.138" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
+  <ItemGroup>
+    <!-- Consume the independently versioned policy package exactly as every
+         other B44 repository does. -->
+    <PackageReference Include="B44.Standards" Version="0.10.*" PrivateAssets="all" />
   </ItemGroup>
 </Project>

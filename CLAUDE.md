@@ -14,13 +14,13 @@
 - Before automated analyzer fixes, baseline measurement, scripted bulk text rewrites, or consuming a freshly published package, read `.b44/B44.Tooling.md`.
 - Godot writes a `.uid` file beside every script as a stable identifier. Commit all of them and never add `*.uid` to `.gitignore`: the project still works locally without them, but references break as soon as it is cloned onto another machine, including a CI runner doing a fresh checkout. Godot generates them for every C# script under the project directory, including engine-free `Core` and test projects it never loads; that is expected and those files are committed too.
 - Each repository keeps a root `BACKLOG.md` for agreed-but-not-started work and known defects, with defects in their own section so they stay distinct from planned work. It is authored by hand, never generated and never gated by the build — an empty file written to satisfy a check is worse than no file. Cross-repository programs live once in `B44.Common`'s backlog; a consumer's backlog links to the program and holds only its own share of the work, never a restatement that can drift.
-- Isolation is by repository, not by folder. Engine- or framework-coupled code (`B44.Godot`, any future adapter) and **obligation-bearing** third-party code we vendor, port, or convert each live in their own repository publishing their own package, never inside a normal B44 repository. Engine coupling keeps the engine-free MSBuild guard literally true with no carve-outs and decouples our cadence from the engine's. Third-party code is a licensing boundary: B44 packages are all rights reserved — source public for reference, not licensed for reuse — so an obligation-bearing file inside one contradicts its own terms. Converting or hand-porting does NOT shed the upstream license; a port is a derivative work and the attribution obligation follows it. Each such repository carries its own `LICENSE` and `THIRD-PARTY-NOTICES.md`. A separate project in-tree is not a substitute: it would require weakening the guard, or dual-licensing within one tree.
-- The test for third-party material is **obligation, not origin**. MIT, BSD, and Apache carry attribution and licence-text requirements that travel with the binary to every consumer, so they are obligation-bearing and take the isolated repository above. CC0 is a public-domain dedication carrying nothing, so it may live in a normal repository — but record its source, date, and what was taken anyway, because provenance you cannot show is provenance you do not have, and storefront disclosure will ask.
+- Isolation is by repository, not by folder. Engine- or framework-coupled adapters live in their own repository and package so engine-free build guards remain literal and release cadences stay independent.
+- Keep licensing boundaries explicit. Source governed by terms different from a repository's `LICENSE` belongs behind a separately documented repository/package boundary with its provenance and required notices intact.
 <!-- B44 ORGANIZATION GUIDANCE: END -->
 
-NuGet packages (`B44.Common` and `B44.Standards` on nuget.org) consumed by B44
-repositories. This is also the canonical source for B44-wide build and agent
-guidance distributed through `B44.Standards`.
+Source and release home for the `B44.Common` NuGet package. B44-wide build and
+agent policy is independently versioned in the public `B44.Standards` package
+and repository.
 
 ## Hard Rules
 
@@ -57,7 +57,7 @@ LiteDB/SQLite/Akavache, 2026-07-16). One small human-readable document per
 concern beats an embedded database here: no queries or partial updates exist;
 JSON + System.Text.Json's tolerant deserialization makes additive save
 evolution free and shape-breaking migrations a readable `JsonNode` transform;
-and a third-party container adds a SECOND compatibility surface (LiteDB has
+and an embedded database adds a SECOND compatibility surface (LiteDB has
 broken its own file format between majors) plus native-binary export friction
 (SQLite). Durability concerns are answered in-store instead: flush-to-disk
 before the rename, and `.bak` rotation with automatic recovery on load — the
@@ -144,15 +144,13 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
 
 - `0.x.y` while the API churns; breaking changes bump the minor version.
 - Publish = push a `v*` tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`);
-  `release.yml` tests and packs both packages, then publishes to nuget.org
+  `release.yml` tests and packs `B44.Common`, then publishes to nuget.org
   through Trusted Publishing (OIDC; no long-lived API key).
-- **The tag is the version, and both packages ship in lockstep.** `release.yml`
-  derives `VERSION` from the tag and passes `-p:Version=$VERSION` to build and
-  pack, which overrides both csprojs. `B44.Common` and `B44.Standards` therefore
-  always publish at the same number, and the `<Version>` in each csproj is a
-  local hint that the release ignores — keep it matching the next intended tag
-  so it does not mislead. Independent per-package versions would need per-package
-  tags and a reworked release workflow; that is not what exists today.
+- **The tag is the package version.** `release.yml` derives `VERSION` from the
+  tag and passes `-p:Version=$VERSION` to build and pack. The `<Version>` in
+  `B44.Common.csproj` is a local hint that the release overrides; keep it
+  matching the next intended tag so it does not mislead. `B44.Standards` and
+  `B44.Templates` release independently from the `B44.Standards` repository.
 - After publishing a breaking change, bump each consumer's compatibility
   boundary deliberately. Compatible releases flow through bounded floats.
 
@@ -166,30 +164,10 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
   `B44WriteRatchetBaseline` target pair. The type stays one minor for consumers
   to migrate off, then goes. No analyzer implements relative-to-baseline
   no-growth, which is why this is custom at all.
-- `B44.Standards/` — build and agent policy as a package (analyzers via plain
-  package dependencies, buildTransitive props/targets, canonical managed
-  guidance under `guidance/`, `config/` globalconfigs +
-  `BannedSymbols.Determinism.txt`/`BannedSymbols.Godot.txt` + `CodeMetricsConfig.txt`; determinism bans are usable by ANY B44 repo via B44Deterministic=true, Godot bans ride B44EngineFreeCore). Severity layering rule:
-  repo `.editorconfig` owns style/whitespace ONLY — analyzer severities live
-  in the packaged globalconfig, because `.editorconfig` outranks global
-  configs and creates unoverridable conflicts (CA1861 taught us). Tuning
-  changes go through this package, never per-repo editorconfigs.
-  `MA0048` (one type per file) is deliberately NOT enabled; sanctioned
-  multi-type files are B44 style. The source-size ratchet also lives here:
-  `B44VerifyRatchet` runs on every build when `B44RatchetEnabled=true`, and
-  `B44WriteRatchetBaseline` is a separate manual target hooked to nothing.
-  Regenerating a baseline is an explicit act performed in the same change as a
-  real extraction — a gate that can rewrite its own expectations during an
-  ordinary build is not a gate. **An agent must never grant itself a ratchet
-  exception** by raising a baseline entry or editing the configuration; when
-  the build fails on the ratchet, do the extraction, or stop and ask David. `TreatWarningsAsErrors` is staged per repo
-  AFTER its allowlist is tuned, not day one.
 - `B44.Common.Tests/` — xunit.v3. `<TestingPlatformDotnetTestSupport>true`
   is required for `dotnet test` to discover xunit.v3 on current SDKs.
-- `templates/` — bootstrap examples for new repositories (build props,
-  workflows, local instruction skeleton, nuget.config, test guard). Ongoing
-  organization/game guidance and synchronization come from B44.Standards;
-  templates are not copied policy forks.
+- `Directory.Build.props` — consumes the bounded `B44.Standards` package and
+  opts this repository into synchronized guidance and the source-size ratchet.
 
 ## Tests
 
