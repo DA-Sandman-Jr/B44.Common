@@ -13,10 +13,6 @@ engine integration remains behind adapter boundaries.
 | Persistence | Repository abstractions, atomic JSON writes, last-good backup recovery, save paths, and classified store failures |
 | Recovery policy | An explicit `UnreadableSavePolicy` at the composition boundary so destructive behavior is visible at the call site |
 
-`B44.Common.Quality.SourceSizeRatchet` remains temporarily as a deprecated
-compatibility surface. New consumers use the build-time ratchet supplied by
-`B44.Standards`.
-
 ## Design guarantees
 
 - No Godot or other engine references.
@@ -34,7 +30,7 @@ Use compatibility-bounded floats for B44 packages while they are pre-1.0:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="B44.Common" Version="0.10.*" />
+  <PackageReference Include="B44.Common" Version="0.11.*" />
   <PackageReference Include="B44.Standards" Version="0.10.*" PrivateAssets="all" />
 </ItemGroup>
 ```

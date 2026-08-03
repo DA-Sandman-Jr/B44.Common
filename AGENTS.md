@@ -160,12 +160,11 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
 
 - `B44.Common/` — the package. Root namespace `B44.Common`; sub-namespaces
   mirror the games' old folder names (`Diagnostics`, `Interfaces`,
-  `Persistence`) so migration was/is a mechanical namespace swap. `Quality/`
-  holds `SourceSizeRatchet`, now `[Obsolete]`: the ratchet is a build-time
-  gate, so it lives in `B44.Standards` as the `B44VerifyRatchet` /
-  `B44WriteRatchetBaseline` target pair. The type stays one minor for consumers
-  to migrate off, then goes. No analyzer implements relative-to-baseline
-  no-growth, which is why this is custom at all.
+  `Persistence`) so migration was/is a mechanical namespace swap. Source-size
+  enforcement is a build-time gate owned by `B44.Standards` through the
+  `B44VerifyRatchet` / `B44WriteRatchetBaseline` target pair. No analyzer
+  implements relative-to-baseline no-growth, which is why that target remains
+  custom.
 - `B44.Common.Tests/` — xunit.v3. `<TestingPlatformDotnetTestSupport>true`
   is required for `dotnet test` to discover xunit.v3 on current SDKs.
 - `Directory.Build.props` — consumes the bounded `B44.Standards` package and
