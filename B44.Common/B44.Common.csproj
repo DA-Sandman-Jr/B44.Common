@@ -2,10 +2,10 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <PackageId>B44.Common</PackageId>
-    <Version>0.10.0</Version>
+    <Version>0.10.1</Version>
     <Authors>DA-Sandman-Jr</Authors>
     <Company>B44 Labs</Company>
-    <Description>Engine-free shared primitives for B44 games: structured logging, injected randomness, durable atomic JSON persistence, and source-size quality tooling.</Description>
+    <Description>Engine-free shared primitives for B44 games: structured logging, injected randomness, durable atomic JSON persistence, and repository abstractions.</Description>
     <RepositoryUrl>https://github.com/DA-Sandman-Jr/B44.Common</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- All rights reserved is not an SPDX identifier, so the licence

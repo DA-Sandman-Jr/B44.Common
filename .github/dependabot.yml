@@ -1,19 +1,5 @@
-# Release notification, not auto-upgrade.
-#
-# The problem this solves is NOT the version edit — that is two lines. It is
-# NOTICING that a release exists at all: B44.Standards sat at 0.7.0 in-tree,
-# bumped but never tagged, until a consumer restore failed with "nearest
-# version 0.6.0". Widening the float would not have helped with that.
-#
-# So the deliberate boundary stays: a human still reviews and merges. This only
-# removes the burden of remembering to look.
-#
-# UNVERIFIED, and this repository is the experiment. Dependabot's NuGet support
-# is uneven with wildcard version ranges like `0.8.*`, and it may not fire at
-# all on a constraint that is already satisfiable. If it does not, the fallback
-# in BACKLOG.md entry 6 is a small scheduled workflow that compares each
-# consumer's pinned boundary against the latest published version and opens an
-# issue on drift.
+# Weekly dependency notifications. Compatibility-boundary changes remain a
+# deliberate human review, and Dependabot preserves the bounded NuGet float.
 
 version: 2
 updates:
@@ -26,12 +12,9 @@ updates:
     commit-message:
       prefix: "deps"
     groups:
-      # One PR per ecosystem rather than per package: these move together and
-      # separate PRs would multiply review for no added signal.
-      analyzers:
+      b44-packages:
         patterns:
-          - "Meziantou.Analyzer"
-          - "Microsoft.CodeAnalysis.*"
+          - "B44.Standards"
       testing:
         patterns:
           - "xunit*"
