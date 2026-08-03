@@ -12,13 +12,14 @@ Status values: **Planned**, **In progress**, **Blocked**, and **Deferred**.
 
 ### 1. Remove the deprecated `SourceSizeRatchet` API
 
-**Status:** **Planned for the next deliberate breaking minor.** The build-time
+**Status:** **In progress for 0.11.0.** The build-time
 `B44VerifyRatchet` / `B44WriteRatchetBaseline` targets in `B44.Standards`
 replaced `B44.Common.Quality.SourceSizeRatchet` in 0.8.1. All current games use
 the build target and have no remaining source reference to the deprecated type.
 
-Remove the type and its compatibility tests together, then advance the
-`B44.Common` compatibility boundary.
+The type and its compatibility tests are removed together in the 0.11.0
+candidate. Measure that candidate against every consumer before publishing,
+then advance each `B44.Common` compatibility boundary deliberately.
 
 ---
 
@@ -53,21 +54,16 @@ Planned waves:
 
 ### P2. Scale shared packages for a twelve-game portfolio
 
-**Status:** **In progress.** `B44.Godot` is independently published, and
+**Status:** **In progress.** `B44.Godot` is independently published;
 `B44.Standards` plus `B44.Templates` moved to their own public repository and
-published successfully as 0.10.1. B44.Godot's reusable-CI cutover passed and
-merged in [PR 17](https://github.com/DA-Sandman-Jr/B44.Godot/pull/17).
+published successfully as 0.10.1; and every reusable-CI consumer now calls the
+reviewed workflow in `B44.Standards`.
 
 Remaining sequence:
 
-1. Finish this repository's cutover: consume `B44.Standards` 0.10.1 from
-   NuGet, remove the extracted projects and workflow, and publish the cleaned
-   `B44.Common` release independently.
-2. Move the reusable-CI pins in TicTacHoe, Time Machine Clicker, and Whispers
-   from `B44.Common` to the reviewed commit in `B44.Standards`.
-3. Create `B44.Games` only when a concrete second-game extraction is ready;
+1. Create `B44.Games` only when a concrete second-game extraction is ready;
    package count alone does not justify a repository.
-4. Extract shared inventory and dungeon mechanics only after stable lifecycle
+2. Extract shared inventory and dungeon mechanics only after stable lifecycle
    seams exist in their current consumers.
 
 ### External: B44.Godot shared adapters

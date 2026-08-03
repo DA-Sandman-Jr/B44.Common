@@ -13,9 +13,6 @@ Engine-free .NET primitives shared across B44 Labs games.
 The package contains reusable mechanisms only. Game rules, content, tuning,
 save schemas, and engine integration remain in their owning repositories.
 
-`B44.Common.Quality.SourceSizeRatchet` is a deprecated compatibility surface;
-new consumers use the build-time ratchet in `B44.Standards`.
-
 See the [source repository](https://github.com/DA-Sandman-Jr/B44.Common) for
 design records, usage guidance, and the complete test suite.
 
