@@ -56,37 +56,11 @@ consumers call the reviewed workflow in `B44.Standards`.
 Remaining sequence:
 
 1. The planned `B44.Games` repository is superseded as of 2026-08-07.
-   `B44.GameSystems` fills that role: created to implement Epic 1 (see P3), it
-   is the home for B44-owned reusable game systems whether they arrive from
-   planning or from extraction. A second repository for the same role would be
-   indistinguishable from it. The original gating rule still applies to what
-   lands there — package count alone does not justify a boundary.
-2. Extraction of shared inventory and dungeon mechanics moved to
-   `B44.GameSystems`' backlog as G2, with its gating condition unchanged:
-   extract only after stable lifecycle seams exist in their current consumers.
-
-### P3. Shared causal foundation
-
-**Status:** **In progress** since 2026-08-07.
-
-An engine-independent causal foundation that lets consumer-defined domains
-prepare, admit, coordinate, finalize, and publish authoritative operations
-deterministically, without imposing a universal game model. Planned as a
-multi-Epic program; only Epic 1 is scheduled.
-
-`B44.Common` owns no implementation here. This entry exists only because the
-program spans repositories.
-
-| Epic | Owning repository | Relationship |
-|---|---|---|
-| 1 — Shared Causal Foundation | `B44.GameSystems` | Implementation; see its G1 |
-| 2 and sibling domain Epics | Not scheduled | Consume Epic 1; Epic 1 never consumes them |
-| 7 — Audience Projection | Not scheduled | Downstream observer; published immutable observations only |
-| 8 — Determinism Diagnostics | Not scheduled | Optional observer/evidence seams; never authority |
-| Consumer games | Their own repositories | Adopt after Epic 1 acceptance; never a foundation prerequisite |
-
-Dependencies point inward throughout: no part of the program requires a change
-to `B44.Standards`, `B44.Common`, or `B44.Godot`.
+   `B44.GameSystems` fills that role as the home for B44-owned reusable game
+   systems whether they arrive from planning or extraction. A second repository
+   for the same role would be indistinguishable from it. The original
+   second-consumer gating rule still applies to what lands there — package count
+   alone does not justify a boundary.
 
 ---
 
