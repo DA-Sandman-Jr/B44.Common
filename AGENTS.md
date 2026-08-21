@@ -68,8 +68,8 @@ only when **two games need materially equivalent envelope behavior**, or a game
 approaches released saves / 1.0. A game merely *having* a save version does not
 trigger it — a local version field is game-owned and expected. (Refined
 2026-07-30: the earlier wording keyed off a second game's envelope *existing*,
-which Time Machine Clicker's planned save version would satisfy mechanically
-while proving nothing about shared behavior.)
+which a planned private consumer's local save version would satisfy
+mechanically while proving nothing about shared behavior.)
 
 ## Custom Logger — Decision Record & Flip Conditions
 
@@ -105,10 +105,10 @@ everything else unchanged. Rejected-with-evidence, revisit only on the flip:
    anywhere. Flip: any repo introduces `Task.Run`/locks/a UI sync-context.
 2. **Culture rules (`MA0011`/`CA1305`)** — zero risky formatting call sites.
    Flip: a repo starts producing parsed or culture-sensitive user strings.
-3. **Security analyzers** — flipped for public/server code after the BFA audit
+3. **Security analyzers** — flipped for public/server code after an endpoint audit
    (2026-07-21). `<B44SecuritySensitive>true</B44SecuritySensitive>` enables the
    complete built-in SDK Security category only for opted-in projects, pinned
-   to their target-framework rule level. The initial BFA + endpoint-library
+   to their target-framework rule level. The initial server + endpoint-library
    baseline found one actionable CA5399 and no other diagnostics; games remain
    outside this profile to avoid irrelevant security-rule noise.
 4. **PublicApiAnalyzers on B44.Common** — churn pre-1.0. Flip: first 1.0
