@@ -1,8 +1,9 @@
 # B44.Common
 
-Engine-free .NET primitives shared across B44 Labs games. The package keeps
-cross-game mechanics small, deterministic, and independently testable while
-engine integration remains behind adapter boundaries.
+B44.Common collects the small, engine-free .NET building blocks that have
+proved useful across B44 games. It keeps logging, deterministic randomness,
+and persistence independently testable while engine integration stays behind
+adapter boundaries.
 
 ## What it provides
 
@@ -63,7 +64,8 @@ Pushing a `v*` tag runs the release workflow, tests the repository, packs only
 `B44.Common`, and publishes through NuGet Trusted Publishing without a
 long-lived API key.
 
-## License
+## Availability and license
 
-Copyright (c) 2026 David Sanders / B44 Labs. All rights reserved. The source is
-publicly available for review but is not licensed for reuse.
+The source is publicly visible for review and portfolio evaluation. No license
+for reuse is granted, and the package is maintained for B44-owned projects
+rather than offered as a supported public dependency. See [LICENSE](LICENSE).
