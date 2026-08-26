@@ -13,6 +13,18 @@
     <B44RatchetRepositoryRoot>$(MSBuildThisFileDirectory)</B44RatchetRepositoryRoot>
     <B44RatchetBaseline>$(MSBuildThisFileDirectory)ratchet-baseline.txt</B44RatchetBaseline>
 
+    <!-- Repository hygiene and the analyzer-suppression ratchet, both anchored
+         to the same project as the checks above. The budget records what the
+         repository has today; raising it is a deliberate one-line edit in this
+         reviewed file. -->
+    <B44HygieneEnabled>true</B44HygieneEnabled>
+    <!-- Two, both justified at the site they sit on: the IsExternalInit
+         polyfill must live in a compiler-dictated namespace (IDE0130), and
+         SystemRandomSource is the sanctioned wrapper the RS0030 ban points
+         callers to. -->
+    <B44SuppressionBudget>2</B44SuppressionBudget>
+    <B44WarningPolicy>true</B44WarningPolicy>
+
   </PropertyGroup>
 
   <!-- B44.Common multi-targets, and both anchored targets above run once per
@@ -23,6 +35,8 @@
   <PropertyGroup Condition="'$(TargetFramework)' != '' and '$(TargetFramework)' != 'net8.0'">
     <B44AgentSyncEnabled>false</B44AgentSyncEnabled>
     <B44RatchetEnabled>false</B44RatchetEnabled>
+    <B44HygieneEnabled>false</B44HygieneEnabled>
+    <B44SuppressionBudget></B44SuppressionBudget>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -42,6 +56,6 @@
   <ItemGroup>
     <!-- Consume the independently versioned policy package exactly as every
          other B44 repository does. -->
-    <PackageReference Include="B44.Standards" Version="0.11.*" PrivateAssets="all" />
+    <PackageReference Include="B44.Standards" Version="0.12.*" PrivateAssets="all" />
   </ItemGroup>
 </Project>
