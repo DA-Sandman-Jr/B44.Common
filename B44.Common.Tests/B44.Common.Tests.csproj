@@ -6,7 +6,20 @@
     <!-- Required on .NET 10 SDK: without this, `dotnet test` restores and
          exits without running any xunit.v3 tests. -->
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+
+    <!-- The repository root, so the target-framework invariants can be asserted
+         against the source they are invariants of. Passed through MSBuild rather
+         than walked at run time, because the test binary's distance from the
+         repository root is a build-layout detail. -->
+    <B44RepositoryRoot>$(MSBuildThisFileDirectory)..\</B44RepositoryRoot>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>B44RepositoryRoot</_Parameter1>
+      <_Parameter2>$(B44RepositoryRoot)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.8.0" />

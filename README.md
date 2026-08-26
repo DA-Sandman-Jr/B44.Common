@@ -17,6 +17,9 @@ adapter boundaries.
 ## Design guarantees
 
 - No Godot or other engine references.
+- Ordinary modern portable .NET. It also targets `netstandard2.1`, provisionally,
+  so hosts still on that profile can load it at all; no API differs between the
+  two targets and the older one is deleted once nothing needs it.
 - Shared mechanisms only; game rules, content, tuning, and save schemas stay in
   their owning games.
 - Seeded randomness is treated as a compatibility surface and covered by
@@ -36,12 +39,17 @@ Use compatibility-bounded floats for B44 packages while they are pre-1.0:
 </ItemGroup>
 ```
 
+On the `netstandard2.1` target, `System.Text.Json` resolves from a package
+rather than in-box. A host that does not restore NuGet needs that assembly and
+its closure alongside `B44.Common.dll`.
+
 `B44.Standards` owns build policy, analyzer configuration, source-size gates,
 agent-guidance synchronization, reusable CI, and repository templates. Its
 source and documentation live in the
 [`B44.Standards`](https://github.com/DA-Sandman-Jr/B44.Standards) repository.
 Godot-specific adapters live separately in
-[`B44.Godot`](https://github.com/DA-Sandman-Jr/B44.Godot).
+[`B44.Godot`](https://github.com/DA-Sandman-Jr/B44.Godot), and Unity-specific
+adapters in [`B44.Unity`](https://github.com/DA-Sandman-Jr/B44.Unity).
 
 ## Build and test
 

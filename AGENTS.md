@@ -52,6 +52,52 @@ and repository.
   raw `System.Random` (tests pin this). Changing them breaks game test suites
   downstream.
 
+## Target Frameworks — Decision Record & Sunset Condition
+
+`netstandard2.1;net8.0`. **The older target is provisional and exists for one
+reason with a known end date.**
+
+Unity 6 runs a Mono profile whose API compatibility level is .NET Standard 2.1,
+and cannot load a `net8.0` assembly at all: it references
+`System.Runtime 8.0.0.0`, and the whole file is refused rather than one call
+site failing. Every engine-free B44 package was `net8.0`-only, so none of them
+could reach Unity — which made a Unity integration impossible to even prove.
+
+**This does not make B44 a .NET Standard codebase.** Shared B44 is ordinary
+modern portable .NET and stays that way. The rule this leaves behind:
+
+- **Nothing else converts on this precedent.** Another shared library takes
+  `netstandard2.1` only if it has its own concrete reason, not because this one
+  did.
+- **The source never bends to keep the target.** No reduced or per-target APIs,
+  no duplicated implementations, no avoiding a modern BCL API this package
+  genuinely wants. If a wanted API is unavailable at `netstandard2.1`, the
+  correct response is to **drop the target**, not to work around it.
+- **`TargetFrameworkParityTests` pins that**: no `#if` outside the compiler
+  polyfill, so the public API cannot come to mean two different things
+  depending on who restored the package.
+
+**Sunset:** delete the `netstandard2.1` target once the modern CoreCLR Unity
+line is the development baseline. That removes `Compat/IsExternalInit.cs`, the
+conditional `System.Text.Json` reference, and the target-framework pin on the
+repository-wide MSBuild targets in `Directory.Build.props` — the whole cost, in
+one commit. `B44.Unity`'s AGENTS.md carries the matching checklist.
+
+What the target costs while it exists:
+
+- **`LangVersion` must be explicit.** `netstandard2.1` would otherwise default
+  to C# 8, and `LogCategory` and `StructuredLogEvent` are record structs.
+- **`System.Text.Json` is a package reference on `netstandard2.1` only**, since
+  it is in-box from `net8.0`. The 10.x line is deliberate: its `netstandard2.1`
+  assets leave `System.Memory`, `System.Buffers` and
+  `System.Threading.Tasks.Extensions` to the platform, where the 8.x line drags
+  `netstandard2.0` copies of all three alongside and duplicates types a .NET
+  Standard 2.1 host already provides. `net8.0` consumers see no dependency
+  change at all.
+- **The repository-wide guidance-sync and ratchet targets are pinned to the
+  `net8.0` inner build.** They run once per inner build, and letting both
+  targets run them puts two concurrent writers on the same generated files.
+
 ## Persistence — Decision Record
 
 `AtomicJsonFileStore` stays custom JSON-on-disk (reviewed against

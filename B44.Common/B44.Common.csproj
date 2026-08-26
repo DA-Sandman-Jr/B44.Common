@@ -1,8 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- net8.0 is what this package is: ordinary modern portable .NET.
+         netstandard2.1 is PROVISIONAL and has a sunset condition — see the
+         Target Frameworks decision record in CLAUDE.md before relying on it or
+         extending the pattern. It is here because a host still on that profile
+         cannot load a net8.0 assembly at all, and because this source already
+         compiled to it unchanged: no API differs by target framework and no
+         type is conditioned on one. If that ever stops being true, the answer
+         is to drop the target rather than work around it. -->
+    <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
     <PackageId>B44.Common</PackageId>
-    <Version>0.11.1</Version>
+    <Version>0.11.2</Version>
     <Authors>DA-Sandman-Jr</Authors>
     <Company>B44 Labs</Company>
     <Description>Engine-free shared primitives for B44 games: structured logging, injected randomness, durable atomic JSON persistence, and repository abstractions.</Description>
@@ -14,6 +22,9 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Copyright (c) 2026 David Sanders (B44 Labs). All rights reserved.</Copyright>
     <RootNamespace>B44.Common</RootNamespace>
+    <!-- Explicit because the netstandard2.1 target would otherwise default to
+         C# 8, and record structs (LogCategory, StructuredLogEvent) need 10. -->
+    <LangVersion>latest</LangVersion>
     <!-- Embed sources and the PDB in the assembly so consuming repos (and the
          agents working in them) can read and step into package code from the
          primary package without coordinating a separate symbols artifact. -->
@@ -23,6 +34,15 @@
          resolved-reference guard). -->
     <B44EngineFreeCore>true</B44EngineFreeCore>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <!-- In-box from net8.0 onwards, a package only on the older profile.
+         The 10.x line is deliberate: its netstandard2.1 assets leave
+         System.Memory, System.Buffers and System.Threading.Tasks.Extensions
+         to the platform, where the 8.x line drags netstandard2.0 copies of
+         all three alongside and duplicates types the host already has. -->
+    <PackageReference Include="System.Text.Json" Version="10.0.11" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />

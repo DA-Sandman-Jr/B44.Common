@@ -13,6 +13,19 @@
     <B44RatchetRepositoryRoot>$(MSBuildThisFileDirectory)</B44RatchetRepositoryRoot>
     <B44RatchetBaseline>$(MSBuildThisFileDirectory)ratchet-baseline.txt</B44RatchetBaseline>
 
+  </PropertyGroup>
+
+  <!-- B44.Common multi-targets, and both anchored targets above run once per
+       inner build. Pinning them to a single target framework keeps the two
+       repository-wide scans from running twice over the same generated files
+       concurrently. net8.0 is the pinned one because it is the target every
+       current consumer binds to, and because the other one is provisional. -->
+  <PropertyGroup Condition="'$(TargetFramework)' != '' and '$(TargetFramework)' != 'net8.0'">
+    <B44AgentSyncEnabled>false</B44AgentSyncEnabled>
+    <B44RatchetEnabled>false</B44RatchetEnabled>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -29,6 +42,6 @@
   <ItemGroup>
     <!-- Consume the independently versioned policy package exactly as every
          other B44 repository does. -->
-    <PackageReference Include="B44.Standards" Version="0.10.*" PrivateAssets="all" />
+    <PackageReference Include="B44.Standards" Version="0.11.*" PrivateAssets="all" />
   </ItemGroup>
 </Project>
