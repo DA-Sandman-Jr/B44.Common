@@ -56,6 +56,6 @@
   <ItemGroup>
     <!-- Consume the independently versioned policy package exactly as every
          other B44 repository does. -->
-    <PackageReference Include="B44.Standards" Version="0.12.*" PrivateAssets="all" />
+    <PackageReference Include="B44.Standards" Version="0.15.*" PrivateAssets="all" />
   </ItemGroup>
 </Project>
