@@ -10,7 +10,7 @@
          is to drop the target rather than work around it. -->
     <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
     <PackageId>B44.Common</PackageId>
-    <Version>0.11.2</Version>
+    <Version>0.11.3</Version>
     <Authors>DA-Sandman-Jr</Authors>
     <Company>B44 Labs</Company>
     <Description>Engine-free shared primitives for B44 games: structured logging, injected randomness, durable atomic JSON persistence, and repository abstractions.</Description>
