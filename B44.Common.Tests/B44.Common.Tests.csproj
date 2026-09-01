@@ -7,6 +7,16 @@
          exits without running any xunit.v3 tests. -->
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
 
+    <!-- Engine-free, enforced by B44.Standards rather than locally. This is the
+         same guard the package project gets through B44EngineFreeCore, and it
+         reads the RESOLVED reference graph: a Godot or Unity assembly is
+         rejected however it arrives, including transitively through a project
+         reference, and an engine source generator is rejected too. The
+         hand-written target this replaced compared three exact item identities
+         and so only ever saw a direct PackageReference. Removing this property
+         removes the rule. -->
+    <B44EngineFree>true</B44EngineFree>
+
     <!-- The repository root, so the target-framework invariants can be asserted
          against the source they are invariants of. Passed through MSBuild rather
          than walked at run time, because the test binary's distance from the
@@ -33,13 +43,4 @@
   <ItemGroup>
     <ProjectReference Include="..\B44.Common\B44.Common.csproj" />
   </ItemGroup>
-
-  <Target Name="PreventGodotDependencies" BeforeTargets="ResolveReferences">
-    <Error Condition="'@(PackageReference->WithMetadataValue('Identity','Godot.NET.Sdk'))' != ''"
-           Text="B44.Common must stay engine-free. Do not reference Godot packages." />
-    <Error Condition="'@(PackageReference->WithMetadataValue('Identity','GodotSharp'))' != ''"
-           Text="B44.Common must stay engine-free. Do not reference Godot packages." />
-    <Error Condition="'@(Reference->WithMetadataValue('Identity','GodotSharp'))' != ''"
-           Text="B44.Common must stay engine-free. Do not reference Godot assemblies." />
-  </Target>
 </Project>
