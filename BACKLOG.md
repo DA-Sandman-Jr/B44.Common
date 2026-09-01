@@ -12,7 +12,7 @@ No B44.Common-local planned work is currently queued.
 
 **Status:** **Deferred** since 2026-07-29.
 
-Do not build migration infrastructure ahead of an actual compatibility promise. Revisit when a project approaches a stable release and two consumers need materially equivalent envelope behavior.
+Do not build migration infrastructure ahead of an actual compatibility promise. This is generalized infrastructure, not a bounded capability, so it keeps the higher bar: revisit when a project approaches a stable release and two consumers need materially equivalent envelope behavior.
 
 The current boundaries remain:
 
@@ -23,9 +23,13 @@ The current boundaries remain:
 
 ### Scale shared packages from demonstrated use
 
-**Status:** **Deferred** until a second-consumer extraction creates a concrete shared boundary.
+**Status:** **Standing constraint**, not scheduled work.
 
-Keep reusable game systems behind repository and package boundaries that reflect demonstrated use. Package count alone does not justify a new abstraction; promote a component only when independent consumers need materially equivalent behavior.
+Keep reusable game systems behind repository and package boundaries that reflect demonstrated use. Package count alone does not justify a new abstraction.
+
+Extraction is judged on the capability, not on a headcount of repositories. A bounded reusable capability may be extracted from a single real consumer when its seam is small and coherent, its API stays domain-facing, independent evidence says the reuse is real, and nothing speculative has to be built around it. A second consumer is one form of that evidence, not a precondition. Generalized infrastructure — cross-capability foundations, orchestration, registries and schedulers, authority or transaction frameworks — keeps the higher bar and normally needs at least two independent real consumers.
+
+Choosing a home is a separate decision from recognizing a capability: shared behavior belongs to the package that naturally owns it, and nothing lands in `B44.Common` by default. A primitive that turns up independently in a second repository is an ownership-review trigger, recorded here with both call sites, not an automatic extraction.
 
 ## Known defects
 
