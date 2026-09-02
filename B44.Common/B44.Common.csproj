@@ -33,6 +33,34 @@
     <!-- Engine-free invariant, enforced by B44.Standards (banned symbols +
          resolved-reference guard). -->
     <B44EngineFreeCore>true</B44EngineFreeCore>
+
+    <!-- Released-compatibility validation, stock .NET Package Validation. It
+         runs inside `dotnet pack` and diffs this package against the one named
+         below, which is downloaded during restore — so the release workflow's
+         no-build pack keeps working unchanged.
+
+         Removing a public type or member, changing a signature, or narrowing
+         accessibility is invisible to a test suite: a test only covers what it
+         calls, and nothing here calls a member in order to prove it still
+         exists. Consumers find out when they float onto the new version and
+         fail to compile. This moves that to pack time.
+
+         The baseline should represent the latest published compatibility
+         surface while the next release is being developed, and must be advanced
+         after each successful publish, alongside the <Version> hint above.
+
+         A stale baseline is not merely stricter. API introduced after it and
+         removed again never appears in the comparison at all, so the removal
+         escapes: add a public Foo() in 0.11.4, delete it in 0.11.5, and a
+         baseline still pinned at 0.11.3 never contained Foo() and reports
+         nothing.
+
+         Breaks are expected at a 0.x minor and are not forbidden here; they
+         become explicit. Record a deliberate one in CompatibilitySuppressions.xml
+         via `dotnet pack -p:GenerateCompatibilitySuppressionFile=true`, so the
+         file is the reviewable list of what was broken on purpose. -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.11.3</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
