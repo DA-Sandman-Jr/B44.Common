@@ -45,10 +45,15 @@
          exists. Consumers find out when they float onto the new version and
          fail to compile. This moves that to pack time.
 
-         The baseline is the LATEST PUBLISHED version, not the version being
-         built — it is the surface the next release must not break silently.
-         Bump it after each publish, alongside the <Version> hint above. Leaving
-         it behind is safe: an older baseline compares more, never less.
+         The baseline should represent the latest published compatibility
+         surface while the next release is being developed, and must be advanced
+         after each successful publish, alongside the <Version> hint above.
+
+         A stale baseline is not merely stricter. API introduced after it and
+         removed again never appears in the comparison at all, so the removal
+         escapes: add a public Foo() in 0.11.4, delete it in 0.11.5, and a
+         baseline still pinned at 0.11.3 never contained Foo() and reports
+         nothing.
 
          Breaks are expected at a 0.x minor and are not forbidden here; they
          become explicit. Record a deliberate one in CompatibilitySuppressions.xml
