@@ -33,8 +33,12 @@ and repository.
 ## Hard Rules
 
 - **Engine-free forever.** No `using Godot`, no Godot/GodotSharp package or
-  assembly references anywhere in this repo. The test csproj enforces this
-  with an MSBuild guard.
+  assembly references anywhere in this repo. Both projects enforce this
+  through `B44.Standards`: the package sets `B44EngineFreeCore` and the test
+  project sets `B44EngineFree`, and the shared guard reads the resolved
+  reference graph — so an engine assembly is rejected however it arrives,
+  including transitively through a project reference, and an engine source
+  generator is rejected with it. Dropping either property drops the rule.
 - **No game content.** Log categories, content catalogs, tuning values, save
   DTOs, and `*ActionResult` shapes stay in the games. This package ships
   mechanisms, not content.
