@@ -72,7 +72,7 @@
          System.Memory, System.Buffers and System.Threading.Tasks.Extensions
          to the platform, where the 8.x line drags netstandard2.0 copies of
          all three alongside and duplicates types the host already has. -->
-    <PackageReference Include="System.Text.Json" Version="10.0.11" />
+    <PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
