@@ -8,8 +8,9 @@ namespace B44.Common.Persistence;
 /// File-backed repository with durable atomic writes and JSON serialization.
 /// Saves flush to disk before a write-then-rename swap, and the previous good
 /// save is kept as <c>.bak</c>; <see cref="Load"/> falls back to that backup
-/// when the main file is missing, torn, or corrupt. Engine-free: callers
-/// resolve the save path themselves — <see cref="SavePaths.ResolveAppData"/>
+/// when the main file is missing, torn, or corrupt. The file mechanics are
+/// <see cref="AtomicFile"/>'s; this adds the typed JSON layer. Engine-free:
+/// callers resolve the save path themselves — <see cref="SavePaths.ResolveAppData"/>
 /// covers the common per-user app-data case.
 /// Format policy is the caller's: pre-release, B44 games reset unreadable
 /// saves via <see cref="RepositoryFactory"/>; released games layer a
@@ -43,116 +44,28 @@ public sealed class AtomicJsonFileStore<T> : IRepository<T>
         _jsonOptions = jsonOptions ?? DefaultJsonOptions;
     }
 
-    private string BackupPath => _savePath + ".bak";
-
-    private string TempPath => _savePath + ".tmp";
-
     public T? Load()
     {
-        try
-        {
-            T? main = ReadDocument(_savePath);
-            if (main is not null)
-            {
-                return main;
-            }
-        }
-        catch (Exception ex) when (ex is not StoreException)
-        {
-            // Main file is corrupt — the backup is the last good save.
-            T? recovered = TryReadBackup();
-            if (recovered is not null)
-            {
-                return recovered;
-            }
-
-            throw new StoreException("Failed to load the save file.", ex);
-        }
-
-        // Main file cleanly absent or empty. A torn write can leave that
-        // state too, so a surviving backup still counts as the save.
-        return TryReadBackup();
+        // Whitespace counts as no document, so a blank main file falls through to the backup.
+        return AtomicFile.ReadText(
+            _savePath,
+            json => string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<T>(json, _jsonOptions));
     }
 
     public void Save(T data)
     {
+        byte[] json;
         try
         {
-            string json = JsonSerializer.Serialize(data, _jsonOptions);
-            using (FileStream stream = new(TempPath, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (StreamWriter writer = new(stream))
-            {
-                writer.Write(json);
-                writer.Flush();
-                // Force the OS write cache to disk BEFORE the rename, so a
-                // power cut can never promote a partially-persisted temp
-                // file to the final path.
-                stream.Flush(flushToDisk: true);
-            }
-
-            if (File.Exists(_savePath))
-            {
-                // Atomic swap that also rotates the previous good save to .bak.
-                File.Replace(TempPath, _savePath, BackupPath, ignoreMetadataErrors: true);
-            }
-            else
-            {
-                File.Move(TempPath, _savePath);
-            }
+            json = JsonSerializer.SerializeToUtf8Bytes(data, _jsonOptions);
         }
         catch (Exception ex)
         {
             throw new StoreException("Failed to save the file.", ex);
         }
+
+        AtomicFile.Write(_savePath, json);
     }
 
-    public void Clear()
-    {
-        try
-        {
-            DeleteIfExists(_savePath);
-            DeleteIfExists(BackupPath);
-            DeleteIfExists(TempPath);
-        }
-        catch (Exception ex)
-        {
-            throw new StoreException("Failed to delete the save file.", ex);
-        }
-    }
-
-    private T? ReadDocument(string path)
-    {
-        if (!File.Exists(path))
-        {
-            return null;
-        }
-
-        string json = File.ReadAllText(path);
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<T>(json, _jsonOptions);
-    }
-
-    private T? TryReadBackup()
-    {
-        try
-        {
-            return ReadDocument(BackupPath);
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    private static void DeleteIfExists(string path)
-    {
-        if (File.Exists(path))
-        {
-            File.Delete(path);
-        }
-    }
+    public void Clear() => AtomicFile.Delete(_savePath);
 }

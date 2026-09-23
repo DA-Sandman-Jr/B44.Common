@@ -125,6 +125,21 @@ trigger it — a local version field is game-owned and expected. (Refined
 which a planned private consumer's local save version would satisfy
 mechanically while proving nothing about shared behavior.)
 
+**`AtomicFile` is the layer underneath (added 2026-09-22, 0.11.4).** The
+durability mechanics — temp file, flush-to-disk, atomic replace with `.bak`
+rotation, temp cleanup on failure, and backup recovery on read — live in
+`AtomicFile` for bytes and UTF-8 text, and `AtomicJsonFileStore` is the typed
+JSON layer over it with unchanged bytes on disk. It exists because games kept
+re-deriving those mechanics for payloads that are not typed JSON: a
+MessagePack save envelope whose hand-rolled replace deleted its own backup,
+pre-serialized match/replay JSON written in place, a text level format, and a
+temp-then-rename settings file without flush or backup. Reads take the caller's
+parser because only the format can tell a corrupt file from a valid one: the
+backup is tried when the main file is missing, empty, fails to parse, or parses
+to null, and a main file that parses always wins, so a document the caller
+later rejects (a wrong version, say) is never silently replaced by an older
+one. Envelope and migration policy stays out of this layer, as above.
+
 ## Custom Logger — Decision Record & Flip Conditions
 
 `StructuredGameLogger` stays custom (reviewed against MEL/Serilog/ZLogger,
