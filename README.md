@@ -11,7 +11,7 @@ adapter boundaries.
 |---|---|
 | Diagnostics | Structured events, category-based verbosity, correlation scopes, and pluggable sinks |
 | Randomness | `IRandomSource` plus a seeded `SystemRandomSource` whose sequence is pinned to `System.Random` |
-| Persistence | Repository abstractions, atomic JSON writes, last-good backup recovery, save paths, and classified store failures |
+| Persistence | Repository abstractions, atomic whole-file writes (`AtomicFile` for bytes and text, `AtomicJsonFileStore` for typed JSON), last-good backup recovery, save paths, and classified store failures |
 | Recovery policy | An explicit `UnreadableSavePolicy` at the composition boundary so destructive behavior is visible at the call site |
 
 ## Design guarantees
@@ -24,8 +24,9 @@ adapter boundaries.
   their owning games.
 - Seeded randomness is treated as a compatibility surface and covered by
   sequence-pinning tests.
-- Persistence flushes data before atomic replacement and automatically tries
-  the previous-good backup before reporting unreadable storage.
+- Persistence flushes data before atomic replacement, keeps the previous good
+  file as a backup, and automatically tries that backup before reporting
+  unreadable storage, for any payload the caller can parse.
 - New primitives must have a demonstrated second consumer.
 
 ## Consuming the package
