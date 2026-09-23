@@ -10,7 +10,7 @@
          is to drop the target rather than work around it. -->
     <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
     <PackageId>B44.Common</PackageId>
-    <Version>0.11.4</Version>
+    <Version>0.11.5</Version>
     <Authors>DA-Sandman-Jr</Authors>
     <Company>B44 Labs</Company>
     <Description>Engine-free shared primitives for B44 games: structured logging, injected randomness, durable atomic file and JSON persistence, and repository abstractions.</Description>
@@ -63,7 +63,7 @@
          via `dotnet pack -p:GenerateCompatibilitySuppressionFile=true`, so the
          file is the reviewable list of what was broken on purpose. -->
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.11.3</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.11.4</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
