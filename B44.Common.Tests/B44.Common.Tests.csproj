@@ -3,8 +3,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
-    <!-- Required on .NET 10 SDK: without this, `dotnet test` restores and
-         exits without running any xunit.v3 tests. -->
+    <!-- Retained for the B44.Standards test-project guard. On .NET 10,
+         global.json selects Microsoft.Testing.Platform for dotnet test. -->
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
 
     <!-- Engine-free, enforced by B44.Standards rather than locally. This is the
@@ -33,8 +33,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
-    <PackageReference Include="xunit.v3" Version="3.2.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

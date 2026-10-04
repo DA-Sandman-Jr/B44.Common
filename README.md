@@ -57,7 +57,7 @@ adapters in [`B44.Unity`](https://github.com/DA-Sandman-Jr/B44.Unity).
 ```bash
 dotnet restore B44.Common.sln
 dotnet build B44.Common.sln --no-restore
-dotnet test B44.Common.sln --no-build
+dotnet test --solution B44.Common.sln --no-build
 ```
 
 The test suite covers deterministic sequences, structured logging, repository
