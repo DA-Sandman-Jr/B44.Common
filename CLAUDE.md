@@ -40,9 +40,11 @@ and repository.
 - **No game content.** Log categories, content catalogs, tuning values, save
   DTOs, and `*ActionResult` shapes stay in the games. This package ships
   mechanisms, not content.
-- **Second-occurrence rule.** A primitive enters this package only when at
-  least two games need it (or demonstrably will within the current effort).
-  This is not a utility dumping ground.
+- **Capability admission follows canonical organization guidance.** A bounded
+  primitive may serve one real consumer when its natural owner is Common,
+  its API is small and coherent, and independent evidence establishes reuse.
+  A second occurrence triggers ownership review; broad infrastructure requires
+  multiple independent consumers. Nothing enters Common by default.
 - **No save backwards-compatibility is a PRE-RELEASE rule.** While a game is
   unreleased, unreadable saves throw `StoreException` and may be reset rather
   than format-migrated (after `AtomicJsonFileStore`'s automatic last-good

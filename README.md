@@ -27,7 +27,7 @@ adapter boundaries.
 - Persistence flushes data before atomic replacement, keeps the previous good
   file as a backup, and automatically tries that backup before reporting
   unreadable storage, for any payload the caller can parse.
-- New primitives must have a demonstrated second consumer.
+- A bounded primitive may enter from one consumer when its seam is coherent and independent evidence supports reuse. Broad infrastructure still needs multiple concrete consumers; ownership follows the capability's natural package.
 
 ## Consuming the package
 
