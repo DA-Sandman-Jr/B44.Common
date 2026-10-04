@@ -234,8 +234,8 @@ engine-free wall — it can only compete with the thin Godot-side adapters.
   `B44VerifyRatchet` / `B44WriteRatchetBaseline` target pair. No analyzer
   implements relative-to-baseline no-growth, which is why that target remains
   custom.
-- `B44.Common.Tests/` — xunit.v3. `<TestingPlatformDotnetTestSupport>true`
-  is required for `dotnet test` to discover xunit.v3 on current SDKs.
+- `B44.Common.Tests/` — xunit.v3 on Microsoft.Testing.Platform v2.
+  `global.json` selects the platform runner for `dotnet test` on .NET 10.
 - `Directory.Build.props` — consumes the bounded `B44.Standards` package and
   opts this repository into synchronized guidance and the source-size ratchet.
 

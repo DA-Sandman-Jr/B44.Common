@@ -30,4 +30,4 @@ jobs:
         run: dotnet build B44.Common.sln -c Debug --no-restore
 
       - name: Run tests
-        run: dotnet test B44.Common.sln -c Debug --no-build
+        run: dotnet test --solution B44.Common.sln -c Debug --no-build

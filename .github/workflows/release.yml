@@ -39,7 +39,7 @@ jobs:
         run: dotnet build B44.Common.sln --configuration Release --no-restore -p:Version=$VERSION
 
       - name: Test
-        run: dotnet test B44.Common.sln --configuration Release --no-build --verbosity minimal
+        run: dotnet test --solution B44.Common.sln --configuration Release --no-build
 
       - name: Pack B44.Common
         run: dotnet pack B44.Common/B44.Common.csproj --configuration Release --no-build -p:Version=$VERSION --output ./nupkgs
