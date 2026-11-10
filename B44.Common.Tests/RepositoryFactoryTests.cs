@@ -59,7 +59,7 @@ public class RepositoryFactoryTests : IDisposable
             warnings.Add);
 
         Assert.IsType<InMemoryRepository<TestState>>(repository);
-        Assert.Contains(warnings, w => w.Contains("will not persist"));
+        Assert.Contains(warnings, w => w.Contains("will not persist", StringComparison.Ordinal));
 
         // The fallback still round-trips for the session.
         repository.Save(new TestState { Score = 5 });
@@ -78,7 +78,7 @@ public class RepositoryFactoryTests : IDisposable
             warnings.Add);
 
         Assert.IsType<AtomicJsonFileStore<TestState>>(repository);
-        Assert.Contains(warnings, w => w.Contains("has been reset"));
+        Assert.Contains(warnings, w => w.Contains("has been reset", StringComparison.Ordinal));
         Assert.False(File.Exists(SavePath));
         Assert.Null(repository.Load());
     }
@@ -95,7 +95,7 @@ public class RepositoryFactoryTests : IDisposable
             warnings.Add);
 
         Assert.IsType<InMemoryRepository<TestState>>(repository);
-        Assert.Contains(warnings, w => w.Contains("left untouched"));
+        Assert.Contains(warnings, w => w.Contains("left untouched", StringComparison.Ordinal));
 
         // The unreadable bytes survive verbatim — this is the whole point of
         // the policy, so a later migration still has something to migrate.
@@ -129,7 +129,7 @@ public class RepositoryFactoryTests : IDisposable
             warnings.Add);
 
         Assert.IsType<InMemoryRepository<TestState>>(repository);
-        Assert.Contains(warnings, w => w.Contains("could not be reset"));
+        Assert.Contains(warnings, w => w.Contains("could not be reset", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class RepositoryFactoryTests : IDisposable
 
         Assert.IsType<InMemoryRepository<TestState>>(repository);
         Assert.False(store.ClearAttempted);
-        Assert.DoesNotContain(warnings, w => w.Contains("reset"));
+        Assert.DoesNotContain(warnings, w => w.Contains("reset", StringComparison.Ordinal));
     }
 
     private sealed class UnresettableStore : IRepository<TestState>

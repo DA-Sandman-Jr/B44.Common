@@ -109,7 +109,7 @@ public class AtomicJsonFileStoreTests : IDisposable
 
         Assert.True(File.Exists(SavePath + ".bak"));
         Assert.Equal(2, store.Load()!.Score);
-        Assert.Contains("1", File.ReadAllText(SavePath + ".bak"));
+        Assert.Contains("1", File.ReadAllText(SavePath + ".bak"), StringComparison.Ordinal);
     }
 
     [Fact]

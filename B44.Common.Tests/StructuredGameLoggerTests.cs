@@ -46,10 +46,10 @@ public class StructuredGameLoggerTests
 
         string result = StructuredGameLogger.Format(evt);
 
-        Assert.Contains("[Campaign]", result);
-        Assert.Contains("Info", result);
-        Assert.Contains("test_event", result);
-        Assert.Contains("corr-123", result);
+        Assert.Contains("[Campaign]", result, StringComparison.Ordinal);
+        Assert.Contains("Info", result, StringComparison.Ordinal);
+        Assert.Contains("test_event", result, StringComparison.Ordinal);
+        Assert.Contains("corr-123", result, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public class StructuredGameLoggerTests
 
         string result = StructuredGameLogger.Format(evt);
 
-        Assert.Contains("foo=bar", result);
-        Assert.Contains("count=3", result);
+        Assert.Contains("foo=bar", result, StringComparison.Ordinal);
+        Assert.Contains("count=3", result, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class StructuredGameLoggerTests
 
         string result = StructuredGameLogger.Format(evt);
 
-        Assert.DoesNotContain("::", result);
+        Assert.DoesNotContain("::", result, StringComparison.Ordinal);
     }
 
     // ── Sink dispatch ────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ public class StructuredGameLoggerTests
         thread.Join();
 
         Assert.NotNull(duringScope);
-        Assert.StartsWith("test-op-", duringScope);
+        Assert.StartsWith("test-op-", duringScope, StringComparison.Ordinal);
         // After the scope is restored the correlation resets; outside log gets a fresh id
         Assert.NotNull(afterScope);
         Assert.NotEqual(duringScope, afterScope, StringComparer.Ordinal);
@@ -172,7 +172,7 @@ public class StructuredGameLoggerTests
             string second = StructuredGameLogger.EnsureCorrelation("another");
 
             Assert.Equal(first, second);
-            Assert.StartsWith("my-op-", first);
+            Assert.StartsWith("my-op-", first, StringComparison.Ordinal);
         }
     }
 
@@ -189,7 +189,7 @@ public class StructuredGameLoggerTests
         thread.Join();
 
         Assert.NotNull(result);
-        Assert.StartsWith("fresh-", result);
+        Assert.StartsWith("fresh-", result, StringComparison.Ordinal);
     }
 
     // ── LogVerbosityConfig ───────────────────────────────────────────────────
